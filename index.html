@@ -3,95 +3,137 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#101014">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0c0b12">
 <title>Lazarus AI</title>
 
 <style>
 :root {
     color-scheme: dark;
-    --bg: #101014;
-    --panel: #17171d;
-    --panel2: #202027;
-    --text: #f5f5f7;
-    --muted: #a2a2ae;
-    --border: #303039;
+    --bg: #0c0b12;
+    --sidebar: #100e18;
+    --panel: #171421;
+    --panel-hover: #211b30;
+    --text: #f7f5fc;
+    --muted: #a39bb5;
+    --border: #292337;
     --accent: #a78bfa;
-    --bubble: #24242d;
-    --input: #1b1b22;
-    --shadow: 0 12px 40px #0002;
+    --accent-strong: #8b5cf6;
+    --bubble: #1c1728;
+    --input: #15121f;
     --font-size: 16px;
+    --shadow: 0 10px 45px #0005;
 }
 * { box-sizing: border-box; }
-body {
+
+html, body {
     margin: 0;
-    height: 100dvh;
+    width: 100%;
+    height: 100%;
     overflow: hidden;
+}
+
+body {
     background: var(--bg);
     color: var(--text);
-    font: var(--font-size)/1.55 system-ui, -apple-system, sans-serif;
+    font: var(--font-size)/1.6 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
+
 body.light {
     color-scheme: light;
-    --bg: #f7f7fa;
+    --bg: #f8f7fc;
+    --sidebar: #f0edf7;
     --panel: #fff;
-    --panel2: #eeeef3;
-    --text: #20202a;
-    --muted: #666675;
-    --border: #dedee7;
-    --accent: #7650d5;
-    --bubble: #ededf3;
+    --panel-hover: #eae5f6;
+    --text: #211a30;
+    --muted: #746b83;
+    --border: #ded7ea;
+    --accent: #8055d9;
+    --accent-strong: #7142ce;
+    --bubble: #eee8f8;
     --input: #fff;
-    --shadow: 0 12px 40px #0000000d;
+    --shadow: 0 10px 35px #47335b12;
 }
-button, input, textarea, select { font: inherit; }
+
+button, textarea, select { font: inherit; }
 button { cursor: pointer; }
-button:focus-visible, input:focus-visible,
-textarea:focus-visible, select:focus-visible {
+button:focus-visible, textarea:focus-visible, select:focus-visible {
     outline: 2px solid var(--accent);
-    outline-offset: 2px;
+    outline-offset: 3px;
 }
-.app { display: flex; height: 100dvh; }
+
+.app { display: flex; height: 100dvh; width: 100%; }
+
+/* SIDEBAR */
 .sidebar {
-    width: 270px;
-    min-width: 270px;
+    position: relative;
+    z-index: 10;
+    width: 265px;
+    min-width: 265px;
+    height: 100%;
     display: flex;
     flex-direction: column;
-    padding: 16px 12px;
-    background: var(--panel);
-    border-right: 1px solid var(--border);
-    transition: width .2s, min-width .2s;
+    padding: 14px 12px;
     overflow: hidden;
-    z-index: 5;
+    background: var(--sidebar);
+    border-right: 1px solid var(--border);
+    transition: width .22s ease, min-width .22s ease;
 }
-.sidebar.collapsed { width: 72px; min-width: 72px; }
+
+.sidebar.collapsed {
+    width: 70px;
+    min-width: 70px;
+}
+
 .brand {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px;
+    gap: 11px;
+    width: 100%;
+    min-height: 48px;
+    padding: 5px;
     margin-bottom: 22px;
-    font-size: 19px;
-    font-weight: 800;
+    border: 0;
+    border-radius: 12px;
+    color: var(--text);
+    background: transparent;
+    text-align: left;
     white-space: nowrap;
 }
+
+.brand:hover { background: var(--panel-hover); }
+
 .brand-icon {
-    width: 38px; height: 38px; flex: 0 0 38px;
-    display: grid; place-items: center;
-    border-radius: 13px;
-    background: var(--accent); color: white;
-}
-.brand-name { overflow: hidden; }
-.nav {
+    width: 39px;
+    height: 39px;
+    flex: 0 0 39px;
     display: grid;
-    gap: 5px;
+    place-items: center;
+    border-radius: 13px;
+    color: white;
+    font-size: 22px;
+    background: linear-gradient(140deg, #c4a5ff, #7c3aed);
+    box-shadow: 0 0 24px #9b6cff36;
 }
+
+.brand-name { font-size: 15px; font-weight: 800; letter-spacing: .06em; }
+.sidebar.collapsed .brand-name,
+.sidebar.collapsed .nav-label,
+.sidebar.collapsed .history-heading,
+.sidebar.collapsed .history-list,
+.sidebar.collapsed .sidebar-footer-label { display: none; }
+
+.sidebar.collapsed .brand { justify-content: center; }
+.sidebar.collapsed .nav-button { justify-content: center; padding: 10px 0; }
+
+.nav { display: grid; gap: 5px; }
+
 .nav-button {
+    width: 100%;
+    min-height: 44px;
     display: flex;
     align-items: center;
-    gap: 13px;
-    width: 100%;
-    min-height: 45px;
+    gap: 12px;
     padding: 10px 12px;
     border: 0;
     border-radius: 11px;
@@ -100,197 +142,410 @@ textarea:focus-visible, select:focus-visible {
     text-align: left;
     white-space: nowrap;
 }
-.nav-button:hover, .nav-button.active { background: var(--panel2); }
-.nav-icon { width: 24px; flex: 0 0 24px; text-align: center; font-size: 19px; }
-.nav-label { overflow: hidden; }
-.sidebar.collapsed .brand-name,
-.sidebar.collapsed .nav-label,
-.sidebar.collapsed .history-list { display: none; }
-.sidebar.collapsed .brand { padding-left: 5px; }
-.sidebar.collapsed .nav-button { justify-content: center; padding: 10px 0; }
+
+.nav-button:hover, .nav-button.active { background: var(--panel-hover); }
+
+.nav-icon {
+    width: 24px;
+    min-width: 24px;
+    display: grid;
+    place-items: center;
+    font-size: 19px;
+}
+
+.nav-label { overflow: hidden; text-overflow: ellipsis; }
+
 .history-heading {
-    margin: 25px 10px 8px;
+    padding: 0 11px;
+    margin: 27px 0 9px;
     color: var(--muted);
-    font-size: 12px;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: .09em;
+    letter-spacing: .12em;
 }
-.history-list { overflow-y: auto; min-height: 0; }
-.history-item {
-    display: flex; align-items: center; gap: 6px;
-    margin: 3px 0;
-}
+
+.history-list { flex: 1; min-height: 0; overflow-y: auto; }
+
+.history-item { display: flex; align-items: center; gap: 3px; margin: 3px 0; }
+
 .history-open {
-    min-width: 0; flex: 1;
+    flex: 1;
+    min-width: 0;
     padding: 9px 10px;
-    border: 0; border-radius: 9px;
-    background: transparent; color: var(--text);
-    text-align: left; white-space: nowrap;
-    overflow: hidden; text-overflow: ellipsis;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text);
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
 }
-.history-open:hover, .history-open.selected { background: var(--panel2); }
+
+.history-open:hover, .history-open.selected { background: var(--panel-hover); }
+
 .history-delete {
-    border: 0; border-radius: 8px; padding: 6px;
-    background: transparent; color: var(--muted);
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--muted);
+    padding: 5px 8px;
 }
-.history-delete:hover { color: #ef6464; background: var(--panel2); }
-.sidebar.collapsed .history-heading,
-.sidebar.collapsed .history-list { display: none; }
-.sidebar-bottom { margin-top: auto; padding-top: 10px; }
-.main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.history-delete:hover { color: #ff7777; background: var(--panel-hover); }
+
+.empty-history { padding: 10px; color: var(--muted); font-size: 13px; }
+
+.sidebar-footer {
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+}
+
+/* MAIN AREA + PURPLE HAZE */
+.main {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background:
+        radial-gradient(ellipse at 53% 30%, #8b5cf610 0%, transparent 44%),
+        var(--bg);
+}
+
+.main::before {
+    content: "";
+    position: absolute;
+    z-index: 0;
+    pointer-events: none;
+    width: 650px;
+    height: 450px;
+    top: 5%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #8247f30c;
+    filter: blur(100px);
+    border-radius: 50%;
+}
+
 .topbar {
-    height: 64px; flex: 0 0 64px;
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; padding: 0 22px;
+    position: relative;
+    z-index: 1;
+    height: 62px;
+    flex: 0 0 62px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 0 22px;
     border-bottom: 1px solid var(--border);
+    background: #0c0b1280;
+    backdrop-filter: blur(16px);
 }
-.topbar-title { font-weight: 700; }
-.topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+body.light .topbar { background: #f8f7fccc; }
+
+.topbar-left, .topbar-actions { display: flex; align-items: center; gap: 10px; }
+.topbar-title { font-weight: 650; font-size: 15px; }
+.status { color: var(--muted); font-size: 12px; }
+
 .icon-button {
-    width: 40px; height: 40px;
+    width: 39px;
+    height: 39px;
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
     border: 1px solid var(--border);
     border-radius: 12px;
-    background: var(--panel); color: var(--text);
-}
-.icon-button:hover { background: var(--panel2); }
-.chat-area {
-    flex: 1; min-height: 0; overflow-y: auto;
-    padding: 28px 18px 20px;
-    scroll-behavior: smooth;
-}
-.messages { width: min(820px, 100%); margin: 0 auto; }
-.welcome {
-    min-height: 48vh;
-    display: flex; flex-direction: column;
-    align-items: center; justify-content: center;
-    text-align: center; padding: 24px;
-}
-.welcome-logo {
-    width: 64px; height: 64px;
-    display: grid; place-items: center;
-    background: var(--accent); color: white;
-    border-radius: 22px; font-size: 30px;
-    margin-bottom: 18px;
-}
-.welcome h1 { margin: 0 0 8px; font-size: clamp(26px, 4vw, 36px); }
-.welcome p { margin: 0; color: var(--muted); }
-.message {
-    display: flex; gap: 12px;
-    margin: 0 0 26px;
-    align-items: flex-start;
-}
-.message.user { flex-direction: row-reverse; }
-.avatar {
-    width: 34px; height: 34px; flex: 0 0 34px;
-    display: grid; place-items: center;
-    border-radius: 12px;
-    background: var(--panel2); font-size: 17px;
-}
-.message.user .avatar { background: var(--accent); color: white; }
-.message-content {
-    min-width: 0; max-width: calc(100% - 48px);
-    padding: 12px 15px; border-radius: 16px;
-    background: var(--bubble);
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-}
-.message.user .message-content { background: var(--accent); color: white; }
-.message-content img {
-    display: block; max-width: min(100%, 320px);
-    max-height: 280px; object-fit: contain;
-    margin-top: 8px; border-radius: 10px;
-}
-.composer-wrap { padding: 12px 18px 20px; }
-.composer {
-    width: min(820px, 100%); margin: 0 auto;
-    padding: 10px; border: 1px solid var(--border);
-    border-radius: 20px; background: var(--input);
-    box-shadow: var(--shadow);
-}
-#messageInput {
-    display: block; width: 100%;
-    min-height: 48px; max-height: 180px;
-    resize: vertical; border: 0; outline: 0;
-    padding: 10px; background: transparent;
     color: var(--text);
+    background: var(--panel);
 }
-.composer-bottom {
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 8px;
+.icon-button:hover { background: var(--panel-hover); }
+
+.chat-area {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scroll-behavior: smooth;
+    padding: 32px 22px 24px;
 }
-.composer-tools { display: flex; gap: 7px; align-items: center; }
-.send-button {
-    min-width: 44px; height: 42px; padding: 0 14px;
-    border: 0; border-radius: 13px;
-    background: var(--accent); color: white;
+
+.messages { width: min(790px, 100%); margin: 0 auto; }
+
+.welcome {
+    min-height: 46vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 25px 12px;
+}
+
+.welcome-logo {
+    width: 62px;
+    height: 62px;
+    display: grid;
+    place-items: center;
+    margin-bottom: 22px;
+    border-radius: 21px;
+    color: white;
+    font-size: 29px;
+    background: linear-gradient(145deg, #c4a5ff, #7c3aed);
+    box-shadow: 0 0 55px #8b5cf64a;
+}
+
+.welcome h1 {
+    margin: 0 0 9px;
+    font-size: clamp(27px, 4vw, 38px);
+    line-height: 1.2;
+    font-weight: 750;
+    letter-spacing: -.04em;
+}
+
+.welcome p { margin: 0; color: var(--muted); font-size: 15px; }
+
+.message {
+    display: flex;
+    gap: 13px;
+    align-items: flex-start;
+    margin-bottom: 27px;
+    animation: appear .18s ease-out;
+}
+
+@keyframes appear {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.avatar {
+    width: 33px;
+    height: 33px;
+    flex: 0 0 33px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: var(--panel-hover);
+    font-size: 16px;
     font-weight: 700;
 }
+
+.message.assistant .avatar {
+    color: white;
+    background: linear-gradient(145deg, #a78bfa, #6d28d9);
+}
+
+.message.user .avatar { display: none; }
+
+.message-content {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    padding: 4px 0;
+    line-height: 1.75;
+}
+
+.message.user { justify-content: flex-end; }
+
+.message.user .message-content {
+    max-width: min(80%, 610px);
+    padding: 12px 16px;
+    border: 1px solid #a78bfa1f;
+    border-radius: 19px 19px 5px 19px;
+    background: var(--bubble);
+}
+
+.message-content img {
+    display: block;
+    max-width: min(100%, 330px);
+    max-height: 280px;
+    object-fit: contain;
+    margin-top: 10px;
+    border-radius: 12px;
+}
+
+.thinking { color: var(--muted); }
+
+.thinking::after {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-left: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 9px 0 var(--accent), 18px 0 var(--accent);
+    animation: pulse 1s infinite alternate;
+}
+
+@keyframes pulse { from { opacity: .25; } to { opacity: 1; } }
+
+/* MESSAGE COMPOSER */
+.composer-wrap {
+    position: relative;
+    z-index: 1;
+    padding: 12px 22px max(17px, env(safe-area-inset-bottom));
+    background: linear-gradient(transparent, var(--bg) 20%);
+}
+
+.composer {
+    width: min(790px, 100%);
+    margin: 0 auto;
+    padding: 10px 12px 10px 16px;
+    border: 1px solid #8b5cf641;
+    border-radius: 24px;
+    background: var(--input);
+    box-shadow: 0 0 35px #8b5cf60a, var(--shadow);
+    transition: border-color .2s, box-shadow .2s;
+}
+
+.composer:focus-within {
+    border-color: #a78bfa8a;
+    box-shadow: 0 0 35px #8b5cf61c, var(--shadow);
+}
+
+#messageInput {
+    display: block;
+    width: 100%;
+    min-height: 43px;
+    max-height: 180px;
+    resize: none;
+    overflow-y: auto;
+    border: 0;
+    outline: 0;
+    padding: 9px 2px;
+    color: var(--text);
+    background: transparent;
+    line-height: 1.55;
+}
+
+#messageInput::placeholder { color: var(--muted); }
+
+.composer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+.composer-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
+
+.send-button {
+    min-width: 43px;
+    height: 41px;
+    padding: 0 15px;
+    border: 0;
+    border-radius: 14px;
+    color: white;
+    background: linear-gradient(135deg, #a78bfa, #7c3aed);
+    font-weight: 750;
+    transition: filter .2s, transform .2s;
+}
+
+.send-button:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
 .send-button:disabled { opacity: .55; cursor: wait; }
+
 .small-note {
-    text-align: center; color: var(--muted);
-    font-size: 12px; margin: 8px 0 0;
+    margin: 9px 0 0;
+    color: var(--muted);
+    text-align: center;
+    font-size: 11px;
 }
-.status { font-size: 12px; color: var(--muted); }
-.panel-view {
-    flex: 1; min-height: 0; overflow-y: auto;
-    padding: 30px 20px;
-}
-.settings-content { width: min(650px, 100%); margin: 0 auto; }
-.settings-content h1 { margin-top: 0; }
+
+/* SETTINGS */
+.panel-view { flex: 1; min-height: 0; overflow-y: auto; padding: 30px 22px; }
+.settings-content { width: min(620px, 100%); margin: 0 auto; }
+.settings-content h1 { font-size: 28px; letter-spacing: -.03em; }
+.settings-intro { color: var(--muted); }
+
 .setting-card {
-    padding: 20px; margin: 14px 0;
+    padding: 20px;
+    margin: 16px 0;
     border: 1px solid var(--border);
-    border-radius: 16px; background: var(--panel);
+    border-radius: 17px;
+    background: var(--panel);
 }
-.setting-card h3 { margin: 0 0 6px; }
-.setting-card p { margin: 0 0 14px; color: var(--muted); font-size: 14px; }
-.setting-row {
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 14px;
-}
+.setting-card h3 { margin: 0 0 5px; font-size: 16px; }
+.setting-card p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+
 select, .secondary-button {
     padding: 10px 12px;
     border: 1px solid var(--border);
-    border-radius: 10px;
-    background: var(--panel2); color: var(--text);
+    border-radius: 11px;
+    color: var(--text);
+    background: var(--panel-hover);
 }
-.secondary-button:hover { filter: brightness(1.08); }
+.secondary-button:hover { filter: brightness(1.1); }
+
 .hidden { display: none !important; }
-.empty-history { padding: 12px; color: var(--muted); font-size: 13px; }
-.mobile-overlay {
-    display: none; position: fixed; inset: 0;
-    background: #0007; z-index: 4;
-}
+
+.mobile-overlay { display: none; }
+
 @media (max-width: 760px) {
     .sidebar {
-        position: fixed; inset: 0 auto 0 0;
-        height: 100dvh; width: 72px; min-width: 72px;
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        width: 70px;
+        min-width: 70px;
         box-shadow: var(--shadow);
     }
+
     .sidebar:not(.expanded) .brand-name,
     .sidebar:not(.expanded) .nav-label,
     .sidebar:not(.expanded) .history-heading,
-    .sidebar:not(.expanded) .history-list { display: none; }
-    .sidebar:not(.expanded) .brand { padding-left: 5px; }
+    .sidebar:not(.expanded) .history-list,
+    .sidebar:not(.expanded) .sidebar-footer-label { display: none; }
+
+    .sidebar:not(.expanded) .brand { justify-content: center; }
     .sidebar:not(.expanded) .nav-button { justify-content: center; padding: 10px 0; }
-    .sidebar.expanded { width: 270px; min-width: 270px; }
+
+    .sidebar.expanded { width: min(280px, 84vw); min-width: min(280px, 84vw); }
+
     .sidebar.expanded .brand-name,
-    .sidebar.expanded .nav-label { display: block; }
+    .sidebar.expanded .nav-label,
     .sidebar.expanded .history-heading,
-    .sidebar.expanded .history-list { display: block; }
-    .sidebar.expanded .brand { padding: 10px; }
+    .sidebar.expanded .history-list,
+    .sidebar.expanded .sidebar-footer-label { display: block; }
+
+    .sidebar.expanded .brand { justify-content: flex-start; }
     .sidebar.expanded .nav-button { justify-content: flex-start; padding: 10px 12px; }
-    .mobile-overlay.show { display: block; }
-    .topbar { padding: 0 12px 0 84px; }
-    .chat-area { padding: 18px 12px; }
-    .composer-wrap { padding: 8px 10px 12px 82px; }
-    .panel-view { padding: 22px 14px 22px 84px; }
+
+    .mobile-overlay.show {
+        display: block;
+        position: fixed;
+        z-index: 8;
+        inset: 0;
+        background: #0008;
+        backdrop-filter: blur(2px);
+    }
+
+    .topbar { padding: 0 12px 0 82px; }
+    .chat-area { padding: 22px 13px 20px; }
+    .composer-wrap { padding: 8px 10px 12px 80px; }
+    .panel-view { padding: 22px 13px 25px 82px; }
     .welcome { min-height: 40vh; }
+    .welcome h1 { font-size: 28px; }
+    .message { gap: 10px; }
+    .message.user .message-content { max-width: 91%; }
+    .composer { border-radius: 20px; }
 }
+
 @media (max-width: 420px) {
     .topbar-title { font-size: 14px; }
-    .message-content { padding: 10px 12px; }
-    .composer { border-radius: 16px; }
+    #connectionStatus { max-width: 85px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-actions { gap: 6px; }
+    .icon-button { width: 36px; height: 36px; }
+    .send-button { padding: 0 12px; }
+    .small-note { font-size: 10px; }
 }
 </style>
 </head>
@@ -300,36 +555,39 @@ select, .secondary-button {
     <div id="mobileOverlay" class="mobile-overlay"></div>
 
     <aside id="sidebar" class="sidebar">
-        <button class="brand nav-button" id="sidebarToggle" title="Collapse or expand sidebar">
+        <button class="brand" id="sidebarToggle" title="Expand or collapse sidebar" aria-label="Toggle sidebar">
             <span class="brand-icon">✦</span>
             <span class="brand-name">LAZARUS AI</span>
         </button>
 
         <nav class="nav">
             <button class="nav-button" id="newChatButton" title="New chat">
-                <span class="nav-icon">＋</span><span class="nav-label">New Chat</span>
+                <span class="nav-icon">＋</span><span class="nav-label">New chat</span>
             </button>
             <button class="nav-button" id="settingsButton" title="Settings">
                 <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
             </button>
         </nav>
 
-        <div class="history-heading">Chat History</div>
+        <div class="history-heading">Your chats</div>
         <div id="historyList" class="history-list"></div>
 
-        <div class="sidebar-bottom">
+        <div class="sidebar-footer">
             <button class="nav-button" id="clearHistoryButton" title="Delete all chats">
-                <span class="nav-icon">⌫</span><span class="nav-label">Clear History</span>
+                <span class="nav-icon">⌫</span>
+                <span class="nav-label sidebar-footer-label">Clear history</span>
             </button>
         </div>
     </aside>
 
     <main class="main">
         <header class="topbar">
-            <div class="topbar-title" id="topbarTitle">Lazarus AI</div>
+            <div class="topbar-left">
+                <div class="topbar-title" id="topbarTitle">Lazarus AI</div>
+            </div>
             <div class="topbar-actions">
-                <span class="status" id="connectionStatus">Connecting…</span>
-                <button class="icon-button" id="themeQuickButton" title="Toggle theme">☼</button>
+                <span class="status" id="connectionStatus">Checking…</span>
+                <button class="icon-button" id="themeQuickButton" title="Toggle theme" aria-label="Toggle theme">☼</button>
             </div>
         </header>
 
@@ -340,11 +598,11 @@ select, .secondary-button {
         <section id="settingsView" class="panel-view hidden">
             <div class="settings-content">
                 <h1>Settings</h1>
-                <p style="color:var(--muted)">Customize your Lazarus experience.</p>
+                <p class="settings-intro">Make Lazarus feel like yours.</p>
 
                 <div class="setting-card">
                     <h3>Appearance</h3>
-                    <p>Choose how Lazarus looks.</p>
+                    <p>Choose your preferred theme.</p>
                     <div class="setting-row">
                         <label for="themeSelect">Theme</label>
                         <select id="themeSelect">
@@ -356,7 +614,7 @@ select, .secondary-button {
 
                 <div class="setting-card">
                     <h3>Text size</h3>
-                    <p>Adjust text throughout the chat interface.</p>
+                    <p>Adjust the text size across the interface.</p>
                     <div class="setting-row">
                         <label for="textSizeSelect">Text size</label>
                         <select id="textSizeSelect">
@@ -369,7 +627,7 @@ select, .secondary-button {
 
                 <div class="setting-card">
                     <h3>Chat history</h3>
-                    <p>Conversations are saved in this browser on this device.</p>
+                    <p>Saved conversations stay in this browser on this device.</p>
                     <button class="secondary-button" id="settingsClearHistory">Delete all chats</button>
                 </div>
 
@@ -383,11 +641,9 @@ select, .secondary-button {
                     placeholder="Message Lazarus..." aria-label="Message Lazarus"></textarea>
                 <div class="composer-bottom">
                     <div class="composer-tools">
-                        <button class="icon-button" id="attachButton" title="Attach an image">＋</button>
-                        <input id="imageInput" type="file" accept="image/*" multiple hidden>
-                        <span id="attachmentStatus" class="status"></span>
+                        <span class="status" id="inputHint">Enter to send · Shift + Enter for a new line</span>
                     </div>
-                    <button class="send-button" id="sendButton">Send ↑</button>
+                    <button class="send-button" id="sendButton">↑</button>
                 </div>
             </div>
             <p class="small-note">Lazarus can make mistakes. Check important information.</p>
@@ -396,14 +652,10 @@ select, .secondary-button {
 </div>
 
 <script>
-const API_BASE = "https://lazarus-backend-75ik.onrender.com";
 "use strict";
 
-/*
- * Lazarus frontend configuration.
- * The Groq API key belongs on Render, never in this file.
- */
-const API_BASE = "https://lazarus-backend-0umw.onrender.com";
+/* Keep the backend URL in exactly one place. */
+const API_BASE = "https://lazarus-backend-75ik.onrender.com";
 const CHAT_KEY = "lazarus_saved_chats_v1";
 const SETTINGS_KEY = "lazarus_preferences_v1";
 
@@ -411,7 +663,6 @@ const $ = id => document.getElementById(id);
 
 let chats = [];
 let currentChatId = null;
-let pendingImages = [];
 let sending = false;
 
 function makeId() {
@@ -420,8 +671,8 @@ function makeId() {
 
 function safeLoad(key, fallback) {
     try {
-        const value = localStorage.getItem(key);
-        return value ? JSON.parse(value) : fallback;
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
     } catch {
         return fallback;
     }
@@ -430,8 +681,8 @@ function safeLoad(key, fallback) {
 function saveChats() {
     try {
         localStorage.setItem(CHAT_KEY, JSON.stringify(chats));
-    } catch {
-        alert("Lazarus couldn't save your chats. Your browser storage may be full.");
+    } catch (error) {
+        console.error("Could not save chats:", error);
     }
 }
 
@@ -439,18 +690,16 @@ function currentChat() {
     return chats.find(chat => chat.id === currentChatId) || null;
 }
 
-function makeTitle(message) {
-    const clean = String(message || "")
-        .replace(/\s+/g, " ")
-        .trim();
-    if (!clean) return "New Chat";
+function makeTitle(text) {
+    const clean = String(text || "").replace(/\s+/g, " ").trim();
+    if (!clean) return "New chat";
     return clean.length > 36 ? clean.slice(0, 36).trimEnd() + "…" : clean;
 }
 
 function newChat() {
     const chat = {
         id: makeId(),
-        title: "New Chat",
+        title: "New chat",
         messages: [],
         createdAt: Date.now(),
         updatedAt: Date.now()
@@ -462,6 +711,7 @@ function newChat() {
     renderHistory();
     showChat();
     renderMessages();
+    closeMobileSidebar();
     $("messageInput").focus();
 }
 
@@ -471,18 +721,19 @@ function openChat(id) {
     renderHistory();
     showChat();
     renderMessages();
+    closeMobileSidebar();
 }
 
 function deleteChat(id) {
     const chat = chats.find(item => item.id === id);
-    if (!chat) return;
-
-    if (!confirm(`Delete "${chat.title}"? This cannot be undone.`)) return;
+    if (!chat || !confirm(`Delete "${chat.title}"?`)) return;
 
     chats = chats.filter(item => item.id !== id);
+
     if (currentChatId === id) {
         currentChatId = chats[0]?.id || null;
     }
+
     saveChats();
     renderHistory();
 
@@ -495,7 +746,8 @@ function deleteChat(id) {
 
 function clearHistory() {
     if (!chats.length) return;
-    if (!confirm("Delete every saved conversation? This cannot be undone.")) return;
+    if (!confirm("Delete all saved conversations? This cannot be undone.")) return;
+
     chats = [];
     currentChatId = null;
     saveChats();
@@ -510,7 +762,7 @@ function renderHistory() {
     if (!chats.length) {
         const empty = document.createElement("div");
         empty.className = "empty-history";
-        empty.textContent = "No conversations yet";
+        empty.textContent = "Your chats will appear here.";
         list.appendChild(empty);
         return;
     }
@@ -521,15 +773,15 @@ function renderHistory() {
 
         const open = document.createElement("button");
         open.className = "history-open" + (chat.id === currentChatId ? " selected" : "");
-        open.textContent = chat.title || "New Chat";
-        open.title = chat.title || "New Chat";
+        open.textContent = chat.title || "New chat";
+        open.title = chat.title || "New chat";
         open.addEventListener("click", () => openChat(chat.id));
 
         const remove = document.createElement("button");
         remove.className = "history-delete";
         remove.textContent = "×";
-        remove.title = "Delete conversation";
-        remove.setAttribute("aria-label", "Delete " + (chat.title || "conversation"));
+        remove.title = "Delete chat";
+        remove.setAttribute("aria-label", "Delete " + (chat.title || "chat"));
         remove.addEventListener("click", () => deleteChat(chat.id));
 
         row.append(open, remove);
@@ -548,6 +800,8 @@ function showSettings() {
     $("chatView").classList.add("hidden");
     $("composerWrap").classList.add("hidden");
     $("settingsView").classList.remove("hidden");
+    $("topbarTitle").textContent = "Settings";
+    closeMobileSidebar();
 }
 
 function renderMessages() {
@@ -555,7 +809,6 @@ function renderMessages() {
     container.replaceChildren();
 
     const chat = currentChat();
-    $("topbarTitle").textContent = chat?.title || "Lazarus AI";
 
     if (!chat || chat.messages.length === 0) {
         const welcome = document.createElement("div");
@@ -573,154 +826,161 @@ function renderMessages() {
 
         welcome.append(logo, heading, description);
         container.appendChild(welcome);
-        return;
+    } else {
+        chat.messages.forEach(message => {
+            const row = document.createElement("article");
+            row.className = "message " + (message.role === "user" ? "user" : "assistant");
+
+            const avatar = document.createElement("div");
+            avatar.className = "avatar";
+            avatar.textContent = message.role === "user" ? "Y" : "✦";
+
+            const content = document.createElement("div");
+            content.className = "message-content";
+
+            if (message.thinking) {
+                content.classList.add("thinking");
+            }
+
+            content.textContent = message.content || "";
+
+            row.append(avatar, content);
+            container.appendChild(row);
+        });
     }
 
-    chat.messages.forEach(message => {
-        const row = document.createElement("article");
-        row.className = "message " + (message.role === "user" ? "user" : "assistant");
+    $("topbarTitle").textContent = chat?.title || "Lazarus AI";
 
-        const avatar = document.createElement("div");
-        avatar.className = "avatar";
-        avatar.textContent = message.role === "user" ? "You" : "✦";
-
-        const content = document.createElement("div");
-        content.className = "message-content";
-        content.textContent = message.content || "";
-
-        if (Array.isArray(message.images)) {
-            message.images.forEach(src => {
-                const image = document.createElement("img");
-                image.src = src;
-                image.alt = "Attached image";
-                content.appendChild(image);
-            });
-        }
-
-        row.append(avatar, content);
-        container.appendChild(row);
+    requestAnimationFrame(() => {
+        $("chatView").scrollTop = $("chatView").scrollHeight;
     });
-
-    $("chatView").scrollTop = $("chatView").scrollHeight;
 }
 
-function addMessage(role, content, images = []) {
+function addUserMessage(content) {
     const chat = currentChat();
     if (!chat) return null;
 
-    const message = { role, content, images };
+    const message = { role: "user", content };
     chat.messages.push(message);
 
-    if (role === "user" && chat.title === "New Chat") {
-        chat.title = makeTitle(content || "Image question");
+    if (chat.title === "New chat") {
+        chat.title = makeTitle(content);
     }
 
     chat.updatedAt = Date.now();
     chats.sort((a, b) => b.updatedAt - a.updatedAt);
     saveChats();
     renderHistory();
-    renderMessages();
     return message;
-}
-
-/*
- * Find a Supabase session token if one exists in this browser.
- * Never put a Groq secret in frontend JavaScript.
- */
-function getSupabaseAccessToken() {
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (!key || !key.startsWith("sb-") || !key.endsWith("-auth-token")) continue;
-
-        try {
-            const data = JSON.parse(localStorage.getItem(key));
-            const token = data?.access_token || data?.currentSession?.access_token;
-            if (token) return token;
-        } catch {}
-    }
-    return "";
 }
 
 async function sendMessage() {
     if (sending) return;
 
     const input = $("messageInput");
-    const message = input.value.trim();
-    const images = pendingImages.slice();
+    const text = input.value.trim();
 
-    if (!message && !images.length) return;
+    if (!text) {
+        input.focus();
+        return;
+    }
 
     if (!currentChat()) newChat();
 
     const chat = currentChat();
-    const text = message || "Please describe the attached image.";
+    if (!chat) return;
 
     input.value = "";
     input.style.height = "auto";
-    pendingImages = [];
-    $("attachmentStatus").textContent = "";
 
-    addMessage("user", text, images);
-    sending = true;
-    $("sendButton").disabled = true;
-    $("sendButton").textContent = "…";
+    addUserMessage(text);
 
     const waiting = {
         role: "assistant",
         content: "Lazarus is thinking…",
-        images: []
+        thinking: true
     };
+
     chat.messages.push(waiting);
+    sending = true;
+    $("sendButton").disabled = true;
+    $("sendButton").textContent = "…";
+    $("connectionStatus").textContent = "Thinking…";
+
     renderMessages();
 
     try {
-        const token = getSupabaseAccessToken();
-        if (!token) {
-            throw new Error("Please sign in through your app's Supabase login before sending AI messages. No valid login session was found in this browser.");
-        }
-
         /*
-         * The current Render API accepts {message, history}
-         * and returns JSON containing {reply}.
+         * This backend currently accepts text chat requests.
+         * It does not require a Supabase token in this frontend.
          */
         const history = chat.messages
             .filter(item => item !== waiting)
-            .slice(-21, -1)
+            .slice(0, -1)
+            .slice(-20)
             .map(item => ({
                 role: item.role === "assistant" ? "assistant" : "user",
                 content: item.content || ""
             }));
 
-        const response = await fetch(API_BASE + "/api/chat", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": "Bearer " + token
-            },
-            body: JSON.stringify({
-                message: text,
-                history
-            })
-        });
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
 
-        const data = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            throw new Error(data.error || data.message || `Chat failed (${response.status}).`);
+        let response;
+
+        try {
+            response = await fetch(API_BASE + "/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text, history }),
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timeoutId);
         }
 
-        waiting.content = data.reply || data.response || data.message || "I didn't receive a reply.";
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || data.message || `Request failed (${response.status}).`
+            );
+        }
+
+        const reply = data.reply || data.response || data.message;
+
+        if (typeof reply !== "string" || !reply.trim()) {
+            throw new Error("The backend responded, but it returned no reply.");
+        }
+
+        waiting.content = reply;
+        waiting.thinking = false;
+        $("connectionStatus").textContent = "Backend online";
     } catch (error) {
         console.error("Lazarus chat error:", error);
-        waiting.content = "Couldn't get a response: " + (error.message || "Unknown error");
+
+        waiting.thinking = false;
+
+        if (error.name === "AbortError") {
+            waiting.content = "Lazarus took too long to respond. Please try again.";
+        } else if (error instanceof TypeError) {
+            waiting.content =
+                "I couldn't reach the chat server. Check your internet connection and try again.";
+        } else {
+            waiting.content = "Couldn't get a response: " + (error.message || "Unknown error");
+        }
+
+        $("connectionStatus").textContent = "Chat error";
     } finally {
         chat.updatedAt = Date.now();
         chats.sort((a, b) => b.updatedAt - a.updatedAt);
         saveChats();
         renderHistory();
         renderMessages();
+
         sending = false;
         $("sendButton").disabled = false;
-        $("sendButton").textContent = "Send ↑";
+        $("sendButton").textContent = "↑";
         input.focus();
     }
 }
@@ -732,6 +992,7 @@ function applySettings() {
         ? settings.textSize : "medium";
 
     document.body.classList.toggle("light", theme === "light");
+
     document.documentElement.style.setProperty(
         "--font-size",
         size === "small" ? "14px" : size === "large" ? "19px" : "16px"
@@ -743,10 +1004,15 @@ function applySettings() {
 }
 
 function saveSettings() {
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-        theme: $("themeSelect").value,
-        textSize: $("textSizeSelect").value
-    }));
+    try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+            theme: $("themeSelect").value,
+            textSize: $("textSizeSelect").value
+        }));
+    } catch (error) {
+        console.error("Could not save settings:", error);
+    }
+
     applySettings();
 }
 
@@ -756,9 +1022,14 @@ function toggleTheme() {
     saveSettings();
 }
 
+function isMobile() {
+    return window.matchMedia("(max-width: 760px)").matches;
+}
+
 function toggleSidebar() {
     const sidebar = $("sidebar");
-    if (window.matchMedia("(max-width: 760px)").matches) {
+
+    if (isMobile()) {
         sidebar.classList.toggle("expanded");
         $("mobileOverlay").classList.toggle(
             "show",
@@ -769,23 +1040,52 @@ function toggleSidebar() {
     }
 }
 
+function closeMobileSidebar() {
+    if (!isMobile()) return;
+    $("sidebar").classList.remove("expanded");
+    $("mobileOverlay").classList.remove("show");
+}
+
 async function checkBackend() {
+    $("connectionStatus").textContent = "Checking…";
+
     try {
-        const response = await fetch(API_BASE + "/api/health");
-        $("connectionStatus").textContent = response.ok ? "Backend online" : "Backend issue";
-    } catch {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        let response;
+
+        try {
+            response = await fetch(API_BASE + "/api/health", {
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+
+        if (!response.ok) throw new Error("Health check failed");
+
+        const data = await response.json();
+
+        $("connectionStatus").textContent =
+            data.status === "ok" ? "Backend online" : "Backend issue";
+    } catch (error) {
+        console.error("Backend health check failed:", error);
         $("connectionStatus").textContent = "Backend unavailable";
     }
 }
 
+/* BUTTONS */
 $("sidebarToggle").addEventListener("click", toggleSidebar);
-$("mobileOverlay").addEventListener("click", toggleSidebar);
+$("mobileOverlay").addEventListener("click", closeMobileSidebar);
 $("newChatButton").addEventListener("click", newChat);
 $("settingsButton").addEventListener("click", showSettings);
+
 $("backToChat").addEventListener("click", () => {
     showChat();
     renderMessages();
 });
+
 $("themeSelect").addEventListener("change", saveSettings);
 $("textSizeSelect").addEventListener("change", saveSettings);
 $("themeQuickButton").addEventListener("click", toggleTheme);
@@ -793,72 +1093,49 @@ $("clearHistoryButton").addEventListener("click", clearHistory);
 $("settingsClearHistory").addEventListener("click", clearHistory);
 $("sendButton").addEventListener("click", sendMessage);
 
+/* Enter sends. Shift + Enter adds a newline. */
 $("messageInput").addEventListener("keydown", event => {
-    if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+    if (
+        event.key === "Enter" &&
+        !event.shiftKey &&
+        !event.isComposing
+    ) {
         event.preventDefault();
         sendMessage();
     }
 });
 
+/* Automatically resize the message box. */
 $("messageInput").addEventListener("input", () => {
     const input = $("messageInput");
     input.style.height = "auto";
     input.style.height = Math.min(input.scrollHeight, 180) + "px";
 });
 
-$("attachButton").addEventListener("click", () => $("imageInput").click());
-
-$("imageInput").addEventListener("change", async event => {
-    const files = Array.from(event.target.files || []);
-    if (!files.length) return;
-
-    if (files.length + pendingImages.length > 3) {
-        alert("Attach up to 3 images per message.");
-        event.target.value = "";
-        return;
-    }
-
-    try {
-        for (const file of files) {
-            if (!file.type.startsWith("image/")) continue;
-            if (file.size > 5 * 1024 * 1024) {
-                alert("Each image must be 5 MB or smaller.");
-                continue;
-            }
-            const dataUrl = await new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
-            pendingImages.push(dataUrl);
-        }
-        $("attachmentStatus").textContent =
-            pendingImages.length ? `${pendingImages.length} image(s) attached` : "";
-    } catch {
-        alert("Could not read one of those images.");
-    }
-    event.target.value = "";
-});
-
-/* Restore settings and saved conversations at startup. */
+/* Restore saved preferences and conversations. */
 applySettings();
-chats = safeLoad(CHAT_KEY, []);
-if (!Array.isArray(chats)) chats = [];
 
-chats = chats.filter(chat =>
-    chat && typeof chat.id === "string" && Array.isArray(chat.messages)
-);
+const savedChats = safeLoad(CHAT_KEY, []);
+chats = Array.isArray(savedChats)
+    ? savedChats.filter(chat =>
+        chat &&
+        typeof chat.id === "string" &&
+        Array.isArray(chat.messages)
+    )
+    : [];
 
 chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
 currentChatId = chats[0]?.id || null;
 
 renderHistory();
-if (!currentChatId) newChat();
-else {
+
+if (!currentChatId) {
+    newChat();
+} else {
     showChat();
     renderMessages();
 }
+
 checkBackend();
 </script>
 </body>
