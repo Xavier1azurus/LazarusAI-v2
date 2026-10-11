@@ -518,6 +518,87 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
     .chat-area { padding: 22px 13px 20px; }
     .composer-wrap { padding: 8px 10px 12px; }
 }
+
+/* ===== LAZARUS VOICE MODE ===== */
+#voiceMode {
+  position: fixed;
+  inset: 0;
+  z-index: 99999;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 22px;
+  padding: 24px;
+  background: #0b0914;
+  color: #f8f7ff;
+  text-align: center;
+}
+
+#voiceMode.active {
+  display: flex;
+}
+
+#voiceMode .voice-orb {
+  width: min(60vw, 250px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 28%,
+    #f0e8ff,
+    #c4b5fd 15%,
+    #8b5cf6 38%,
+    #5428a6 65%,
+    #171026 100%
+  );
+  box-shadow: 0 0 45px #8b5cf688,
+              inset -12px -15px 30px #1c103b;
+  transition: box-shadow .2s ease, transform .2s ease;
+}
+
+#voiceMode.listening .voice-orb {
+  animation: lazarusPulse 1s ease-in-out infinite alternate;
+  box-shadow: 0 0 75px #a78bfa;
+}
+
+#voiceMode.speaking .voice-orb {
+  animation: lazarusPulse .4s ease-in-out infinite alternate;
+  box-shadow: 0 0 85px #c4b5fd;
+}
+
+@keyframes lazarusPulse {
+  from { transform: scale(.96); }
+  to { transform: scale(1.06); }
+}
+
+#voiceMode .voice-status {
+  min-height: 24px;
+  color: #c4b5fd;
+}
+
+#voiceMode .voice-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+#voiceMode button {
+  border: 1px solid #51416f;
+  border-radius: 999px;
+  padding: 12px 19px;
+  color: white;
+  background: #211831;
+  font: inherit;
+  cursor: pointer;
+}
+
+#voiceMode .voice-close {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+}
+
 </style>
 </head>
 
