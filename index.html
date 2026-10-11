@@ -599,6 +599,165 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
   left: 20px;
 }
 
+/* ===== STUDY MODE ===== */
+#studyView {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 28px 18px;
+  background:
+    radial-gradient(ellipse at 50% 0%, #8b5cf61c, transparent 60%),
+    var(--bg);
+}
+
+.study-inner {
+  width: min(850px, 100%);
+  margin: 0 auto;
+}
+
+.study-heading {
+  margin-bottom: 25px;
+}
+
+.study-heading h1 {
+  font: 500 clamp(30px, 5vw, 42px) Newsreader, Georgia, serif;
+  margin: 0 0 8px;
+}
+
+.study-heading p {
+  color: var(--muted);
+  margin: 0;
+}
+
+.study-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.study-tab {
+  min-width: 0;
+  padding: 13px 5px;
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: var(--panel);
+  color: var(--muted);
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+
+.study-tab.active {
+  border-color: var(--accent);
+  background: var(--panel-hover);
+  color: var(--text);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.study-panel {
+  padding: clamp(15px, 3vw, 24px);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.study-panel h2 {
+  font: 500 25px Newsreader, Georgia, serif;
+  margin: 0 0 8px;
+}
+
+.study-description {
+  color: var(--muted);
+  font-size: 14px;
+  margin: 0 0 18px;
+}
+
+.study-field {
+  width: 100%;
+  display: block;
+  resize: vertical;
+  min-height: 105px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  margin-bottom: 12px;
+}
+
+.study-field:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.study-primary {
+  border: 0;
+  border-radius: 11px;
+  background: var(--accent);
+  color: var(--on-accent);
+  padding: 11px 17px;
+  font-weight: 600;
+}
+
+.study-primary:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+.study-result {
+  margin-top: 20px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+
+.study-result:empty { display: none; }
+
+.study-result:empty + .study-flashcards {
+  display: none;
+}
+
+.study-flashcards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.study-flashcard {
+  min-height: 145px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg);
+  color: var(--text);
+  text-align: left;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.study-flashcard:hover {
+  border-color: var(--accent);
+}
+
+.study-flashcard small {
+  display: block;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+
+.study-status {
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: 12px;
+}
+
+@media (max-width: 480px) {
+  #studyView { padding: 20px 12px; }
+  .study-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
 </style>
 </head>
 
@@ -646,6 +805,11 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
         </button>
 
         <button class="new-chat-btn" id="newChatButton" title="New chat">
+<button class="new-chat-btn" id="studyModeButton" title="Study Mode">
+  <span class="nav-icon">📚</span>
+  <span class="nav-label">Study Mode</span>
+</button>
+
             <span class="nav-icon">＋</span><span class="nav-label">New chat</span>
         </button>
 
@@ -676,6 +840,42 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
         </section>
 
         <footer id="composerWrap" class="composer-wrap">
+            
+<section id="studyView" hidden>
+  <div class="study-inner">
+    <header class="study-heading">
+      <h1>Study Mode 📚</h1>
+      <p>Your personal learning space. Understand more, practise more, and learn at your pace.</p>
+    </header>
+
+    <div class="study-tabs" role="tablist" aria-label="Study tools">
+      <button class="study-tab active" data-study-mode="learn" role="tab" aria-selected="true">📖 Learn</button>
+      <button class="study-tab" data-study-mode="quiz" role="tab" aria-selected="false">🧠 Quiz</button>
+      <button class="study-tab" data-study-mode="flashcards" role="tab" aria-selected="false">🗂️ Flashcards</button>
+      <button class="study-tab" data-study-mode="homework" role="tab" aria-selected="false">✏️ Homework</button>
+    </div>
+
+    <div class="study-panel">
+      <h2 id="studyTitle">Learn Mode</h2>
+      <p class="study-description" id="studyDescription">Choose a topic and Lazarus will teach it step by step.</p>
+
+      <label for="studyInput">What are you studying?</label>
+      <textarea id="studyInput" class="study-field" placeholder="Enter a topic, question, or paste your notes..."></textarea>
+
+      <div id="studyAnswerArea" hidden>
+        <label for="studyAnswer">Your answer</label>
+        <textarea id="studyAnswer" class="study-field" placeholder="Write your answer here..."></textarea>
+      </div>
+
+      <button class="study-primary" id="studyGo">Start learning →</button>
+      <p id="studyStatus" class="study-status" role="status" aria-live="polite"></p>
+
+      <div id="studyResult" class="study-result"></div>
+      <div id="studyFlashcards" class="study-flashcards"></div>
+    </div>
+  </div>
+</section>
+
             <div id="thumbs" hidden></div>
             <div id="spkbar" hidden><button id="spstop">■ Stop speaking</button></div>
             <div class="composer">
