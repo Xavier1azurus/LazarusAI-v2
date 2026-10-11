@@ -797,6 +797,7 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
   </div>
 </div>
 
+
 <div class="app">
     <aside id="sidebar" class="sidebar">
         <button class="brand" id="sidebarToggle" title="Expand or collapse sidebar" aria-label="Toggle sidebar">
@@ -804,7 +805,6 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
             <span class="brand-name logo">Laz<i>a</i>rus</span>
         </button>
 
-               <```html
         <button class="new-chat-btn" id="newChatButton" title="New chat">
             <span class="nav-icon">＋</span>
             <span class="nav-label">New chat</span>
@@ -814,50 +814,111 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
             <span class="nav-icon">📚</span>
             <span class="nav-label">Study Mode</span>
         </button>
+    </aside>
 
-                <section id="chatView" class="chat-area">
+    <main class="main">
+        <header class="topbar">
+            <button id="menu" aria-label="Open sidebar">☰</button>
+            <span class="logo">Laz<i>a</i>rus</span>
+        </header>
+
+        <!-- NORMAL CHAT -->
+        <section id="chatView" class="chat-area">
             <div id="messages" class="messages"></div>
         </section>
 
+        <!-- STUDY MODE: OUTSIDE THE COMPOSER -->
         <section id="studyView" hidden>
-            <!-- Study Mode content goes here -->
+            <div class="study-inner">
+                <header class="study-heading">
+                    <h1>Study Mode 📚</h1>
+                    <p>Your personal learning space. Understand more, practise more, and learn at your pace.</p>
+                </header>
+
+                <div class="study-tabs" role="tablist" aria-label="Study tools">
+                    <button class="study-tab active" data-study-mode="learn" role="tab" aria-selected="true">📖 Learn</button>
+                    <button class="study-tab" data-study-mode="quiz" role="tab" aria-selected="false">🧠 Quiz</button>
+                    <button class="study-tab" data-study-mode="flashcards" role="tab" aria-selected="false">🗂️ Flashcards</button>
+                    <button class="study-tab" data-study-mode="homework" role="tab" aria-selected="false">✏️ Homework</button>
+                </div>
+
+                <div class="study-panel">
+                    <h2 id="studyTitle">Learn Mode</h2>
+
+                    <p class="study-description" id="studyDescription">
+                        Choose a topic and Lazarus will teach it step by step.
+                    </p>
+
+                    <label for="studyInput">What are you studying?</label>
+                    <textarea
+                        id="studyInput"
+                        class="study-field"
+                        placeholder="Enter a topic, question, or paste your notes..."
+                    ></textarea>
+
+                    <div id="studyAnswerArea" hidden>
+                        <label for="studyAnswer">Your answer</label>
+                        <textarea
+                            id="studyAnswer"
+                            class="study-field"
+                            placeholder="Write your answer here..."
+                        ></textarea>
+                    </div>
+
+                    <button class="study-primary" id="studyGo">Start learning →</button>
+
+                    <p id="studyStatus" class="study-status" role="status" aria-live="polite"></p>
+
+                    <div id="studyResult" class="study-result"></div>
+                    <div id="studyFlashcards" class="study-flashcards"></div>
+                </div>
+            </div>
         </section>
 
-   <footer id="composerWrap" class="composer-wrap">
-            
-<section id="studyView" hidden>
-  <div class="study-inner">
-    <header class="study-heading">
-      <h1>Study Mode 📚</h1>
-      <p>Your personal learning space. Understand more, practise more, and learn at your pace.</p>
-    </header>
+        <!-- MESSAGE COMPOSER: STAYS AT THE BOTTOM -->
+        <footer id="composerWrap" class="composer-wrap">
+            <div id="thumbs" hidden></div>
 
-    <div class="study-tabs" role="tablist" aria-label="Study tools">
-      <button class="study-tab active" data-study-mode="learn" role="tab" aria-selected="true">📖 Learn</button>
-      <button class="study-tab" data-study-mode="quiz" role="tab" aria-selected="false">🧠 Quiz</button>
-      <button class="study-tab" data-study-mode="flashcards" role="tab" aria-selected="false">🗂️ Flashcards</button>
-      <button class="study-tab" data-study-mode="homework" role="tab" aria-selected="false">✏️ Homework</button>
-    </div>
+            <div id="spkbar" hidden>
+                <button id="spstop">■ Stop speaking</button>
+            </div>
 
-    <div class="study-panel">
-      <h2 id="studyTitle">Learn Mode</h2>
-      <p class="study-description" id="studyDescription">Choose a topic and Lazarus will teach it step by step.</p>
+            <div class="composer">
+                <button class="ib" id="att" title="Attach photos" aria-label="Attach photos">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="16" rx="3"/>
+                        <circle cx="9" cy="10" r="1.6"/>
+                        <path d="M21 16l-5-5-8 8"/>
+                    </svg>
+                </button>
 
-      <label for="studyInput">What are you studying?</label>
-      <textarea id="studyInput" class="study-field" placeholder="Enter a topic, question, or paste your notes..."></textarea>
+                <input type="file" id="file" accept="image/*" multiple hidden>
 
-      <div id="studyAnswerArea" hidden>
-        <label for="studyAnswer">Your answer</label>
-        <textarea id="studyAnswer" class="study-field" placeholder="Write your answer here..."></textarea>
-      </div>
+                <textarea
+                    id="messageInput"
+                    rows="1"
+                    maxlength="12000"
+                    placeholder="Message Lazarus..."
+                    aria-label="Message Lazarus"
+                ></textarea>
 
-      <button class="study-primary" id="studyGo">Start learning →</button>
-      <p id="studyStatus" class="study-status" role="status" aria-live="polite"></p>
+                <button class="ib" id="voiceOpen" title="Open Voice Mode" aria-label="Open Voice Mode">✦</button>
 
-      <div id="studyResult" class="study-result"></div>
-      <div id="studyFlashcards" class="study-flashcards"></div>
-    </div>
-  </div>
+                <button class="ib" id="mic" title="Speak your message" aria-label="Speak your message">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="9" y="3" width="6" height="11" rx="3"/>
+                        <path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>
+                    </svg>
+                </button>
+
+                <button class="send-button" id="sendButton" aria-label="Send">↑</button>
+            </div>
+
+            <p class="small-note">Lazarus can make mistakes. Check important information.</p>
+        </footer>
+    </main>
+</div>
+
 </section>
 
             <div id="thumbs" hidden></div>
