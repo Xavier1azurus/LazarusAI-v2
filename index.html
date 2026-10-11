@@ -1008,12 +1008,37 @@ async function send(regenIndex = null) {
   ctrl = new AbortController(); setBusy(true);
   const tok = speakTok, st = { i: 0 };
   try {
-    const r = await sb('/functions/v1/groq-chat', {
-      method:'POST', signal: ctrl.signal,
-      body: JSON.stringify({ messages: apiMessages() })
-    });
-    if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error?.message || 'Request failed (' + r.status + ')');
-    if (!r.body) throw new Error('Empty response stream.');
+    
+    if (user.guest) {
+      throw new Error("Please sign in to use Lazarus AI chat.");
+    }
+
+    // Refresh/check the Supabase session before calling Render.
+    const sessionCheck = await sb("/auth/v1/user");
+    if (!sessionCheck.ok) {
+      throw new Error("Your session expired. Please sign in again.");
+    }
+
+    const session = LS.get("lz_session");
+    if (!session?.access_token) {
+      throw new Error("Please sign in again to continue.");
+    }
+
+    const r = await fetch(
+      "https://lazarus-backend-75ik.onrender.com/api/chat",
+      {
+        method: "POST",
+        signal: ctrl.signal,
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer " + session.access_token
+        },
+        body: JSON.stringify({
+          messages: apiMessages()
+        })
+      }
+    );
+
     const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
     const consumeSSE = line => {
       if (!line.startsWith('data:')) return false;
