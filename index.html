@@ -774,6 +774,212 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
     line-height: 1.4;
 }
 
+/* ===== INTERACTIVE STUDY QUIZZES ===== */
+
+.quiz-progress {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0 10px;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.quiz-progress-track {
+    height: 7px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: var(--border);
+    margin-bottom: 20px;
+}
+
+.quiz-progress-fill {
+    height: 100%;
+    width: 0;
+    border-radius: inherit;
+    background: var(--accent);
+    transition: width .25s ease;
+}
+
+.quiz-question {
+    font-size: 20px;
+    font-weight: 650;
+    line-height: 1.5;
+    margin: 16px 0;
+}
+
+.quiz-options {
+    display: grid;
+    gap: 10px;
+    margin: 16px 0;
+}
+
+.quiz-option {
+    width: 100%;
+    padding: 13px 15px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text);
+    text-align: left;
+    font: inherit;
+    cursor: pointer;
+}
+
+.quiz-option:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--panel-hover);
+}
+
+.quiz-option:disabled {
+    cursor: default;
+    opacity: .9;
+}
+
+.quiz-option.correct {
+    border-color: #36b878;
+    background: #36b87818;
+}
+
+.quiz-option.incorrect {
+    border-color: #e56b75;
+    background: #e56b7518;
+}
+
+.quiz-feedback {
+    margin: 14px 0;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    line-height: 1.6;
+}
+
+.quiz-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.quiz-score {
+    color: var(--muted);
+    font-size: 14px;
+}
+
+.quiz-answer-input {
+    width: 100%;
+    min-height: 95px;
+    resize: vertical;
+    padding: 12px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+}
+
+/* ===== CALCULATOR BUTTON AND POPUP ===== */
+
+.study-tools {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+.calculator-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 9px 13px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--panel);
+    color: var(--text);
+    font: inherit;
+    cursor: pointer;
+}
+
+.calculator-toggle:hover {
+    border-color: var(--accent);
+}
+
+.calculator-popup {
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1000;
+    width: min(320px, calc(100vw - 24px));
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: var(--shadow);
+}
+
+.calculator-popup[hidden] {
+    display: none;
+}
+
+.calculator-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+.calculator-header button {
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+}
+
+.calculator-display {
+    width: 100%;
+    min-width: 0;
+    margin-bottom: 12px;
+    padding: 14px 10px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    text-align: right;
+    font-size: 24px;
+}
+
+.calculator-keys {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.calculator-keys button {
+    min-height: 44px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.calculator-keys button:hover {
+    border-color: var(--accent);
+    background: var(--panel-hover);
+}
+
+@media (max-width: 480px) {
+    .calculator-popup {
+        right: 12px;
+        bottom: 12px;
+    }
+}
+
 </style>
 </head>
 
