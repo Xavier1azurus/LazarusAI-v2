@@ -1318,5 +1318,31 @@ applyTheme(LS.get('lz_theme', 'dark'));
 Auth.restore().then(u => enter(u || GUEST)).catch(() => enter(GUEST));
 updateBtns();
 </script>
+
+<!-- ===== LAZARUS VOICE MODE SCREEN ===== -->
+<section id="voiceMode" aria-label="Lazarus Voice Mode" aria-hidden="true">
+
+  <button class="voice-close" id="voiceClose" type="button">
+    ← Back to chat
+  </button>
+
+  <div class="voice-orb" aria-hidden="true"></div>
+
+  <h2>Lazarus Voice Mode</h2>
+
+  <p id="voiceStatus" class="voice-status" role="status" aria-live="polite">
+    Tap Start talking to begin.
+  </p>
+
+  <p id="voiceTranscript" aria-live="polite"></p>
+
+  <div class="voice-controls">
+    <button id="voiceStart" type="button">🎙 Start talking</button>
+    <button id="voiceInterrupt" type="button">✋ Interrupt</button>
+    <button id="voiceStop" type="button">Stop listening</button>
+  </div>
+
+</section>
+
 </body>
 </html>
