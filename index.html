@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,7 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0c0b12">
 <title>Lazarus AI</title>
-<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+
 <style>
 :root {
     color-scheme: dark;
@@ -20,10 +21,22 @@
     --accent-strong: #8b5cf6;
     --bubble: #1c1728;
     --input: #15121f;
-    --code: #090909;
-    --err: #ff8a8a;
     --font-size: 16px;
     --shadow: 0 10px 45px #0005;
+}
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font: var(--font-size)/1.6 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
 body.light {
@@ -39,37 +52,15 @@ body.light {
     --accent-strong: #7142ce;
     --bubble: #eee8f8;
     --input: #fff;
-    --code: #e4e4e4;
-    --err: #c0392b;
     --shadow: 0 10px 35px #47335b12;
 }
 
-* { box-sizing: border-box; }
-[hidden] { display: none !important; }
-
-html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    font: var(--font-size)/1.6 Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    display: flex;
-}
-
-button, textarea, select { font: inherit; color: inherit; }
+button, textarea, select { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, textarea:focus-visible, select:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
 }
-
-.logo { font-family: Newsreader, Georgia, serif; font-size: 22px; letter-spacing: .01em; }
-.logo i { color: var(--accent); }
 
 .app { display: flex; height: 100dvh; width: 100%; }
 
@@ -86,7 +77,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     overflow: hidden;
     background: var(--sidebar);
     border-right: 1px solid var(--border);
-    transition: width .22s ease, min-width .22s ease, transform .2s;
+    transition: width .22s ease, min-width .22s ease;
 }
 
 .sidebar.collapsed {
@@ -101,7 +92,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     width: 100%;
     min-height: 48px;
     padding: 5px;
-    margin-bottom: 12px;
+    margin-bottom: 22px;
     border: 0;
     border-radius: 12px;
     color: var(--text);
@@ -125,17 +116,15 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     box-shadow: 0 0 24px #9b6cff36;
 }
 
+.brand-name { font-size: 15px; font-weight: 800; letter-spacing: .06em; }
 .sidebar.collapsed .brand-name,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .history-heading,
 .sidebar.collapsed .history-list,
-.sidebar.collapsed .sidebar-footer-label,
-.sidebar.collapsed .me small,
-.sidebar.collapsed .me button:not(#gear) { display: none; }
+.sidebar.collapsed .sidebar-footer-label { display: none; }
 
 .sidebar.collapsed .brand { justify-content: center; }
 .sidebar.collapsed .nav-button { justify-content: center; padding: 10px 0; }
-.sidebar.collapsed .me { justify-content: center; padding: 10px 0; }
 
 .nav { display: grid; gap: 5px; }
 
@@ -168,7 +157,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
 
 .history-heading {
     padding: 0 11px;
-    margin: 20px 0 9px;
+    margin: 27px 0 9px;
     color: var(--muted);
     font-size: 11px;
     font-weight: 700;
@@ -176,9 +165,9 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     letter-spacing: .12em;
 }
 
-.history-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+.history-list { flex: 1; min-height: 0; overflow-y: auto; }
 
-.history-item { display: flex; align-items: center; gap: 3px; margin: 2px 0; }
+.history-item { display: flex; align-items: center; gap: 3px; margin: 3px 0; }
 
 .history-open {
     flex: 1;
@@ -187,7 +176,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     border: 0;
     border-radius: 9px;
     background: transparent;
-    color: var(--muted);
+    color: var(--text);
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
@@ -195,7 +184,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     font-size: 13px;
 }
 
-.history-open:hover, .history-open.selected { background: var(--panel-hover); color: var(--text); }
+.history-open:hover, .history-open.selected { background: var(--panel-hover); }
 
 .history-delete {
     border: 0;
@@ -203,38 +192,15 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     background: transparent;
     color: var(--muted);
     padding: 5px 8px;
-    opacity: 0;
 }
-.history-item:hover .history-delete { opacity: 1; }
 .history-delete:hover { color: #ff7777; background: var(--panel-hover); }
 
 .empty-history { padding: 10px; color: var(--muted); font-size: 13px; }
 
-.me {
+.sidebar-footer {
+    padding-top: 10px;
     border-top: 1px solid var(--border);
-    padding: 12px 6px 0;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-top: auto;
 }
-
-.av {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: var(--accent);
-    color: var(--on-accent, #111);
-    display: grid;
-    place-items: center;
-    font-weight: 600;
-    font-size: 13px;
-    flex-shrink: 0;
-}
-
-.me small { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 13px; }
-.me button { background: none; border: 0; color: var(--muted); font-size: 13px; }
-.me button:hover { color: var(--text); }
 
 /* MAIN AREA + PURPLE HAZE */
 .main {
@@ -337,18 +303,13 @@ body.light .topbar { background: #f8f7fccc; }
 
 .welcome h1 {
     margin: 0 0 9px;
-    font-family: Newsreader, Georgia, serif;
     font-size: clamp(27px, 4vw, 38px);
     line-height: 1.2;
-    font-weight: 500;
-    letter-spacing: -.02em;
+    font-weight: 750;
+    letter-spacing: -.04em;
 }
 
 .welcome p { margin: 0; color: var(--muted); font-size: 15px; }
-
-.sug { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
-.sug button { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px; color: var(--muted); font-size: 13px; }
-.sug button:hover { color: var(--text); border-color: var(--accent); background: var(--panel-hover); }
 
 .message {
     display: flex;
@@ -371,7 +332,7 @@ body.light .topbar { background: #f8f7fccc; }
     place-items: center;
     border-radius: 11px;
     background: var(--panel-hover);
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
 }
 
@@ -386,8 +347,9 @@ body.light .topbar { background: #f8f7fccc; }
     min-width: 0;
     max-width: 100%;
     overflow-wrap: anywhere;
+    white-space: pre-wrap;
+    padding: 4px 0;
     line-height: 1.75;
-    flex: 1;
 }
 
 .message.user { justify-content: flex-end; }
@@ -398,16 +360,7 @@ body.light .topbar { background: #f8f7fccc; }
     border: 1px solid #a78bfa1f;
     border-radius: 19px 19px 5px 19px;
     background: var(--bubble);
-    white-space: pre-wrap;
 }
-
-/* Markdown styling inside assistant messages */
-.message-content p { margin: 0 0 .8em; }
-.message-content pre { background: var(--code); border: 1px solid var(--border); border-radius: 10px; padding: 12px; overflow-x: auto; font-size: 13px; }
-.message-content code { font-family: ui-monospace, Menlo, monospace; font-size: .92em; }
-.message-content :not(pre) > code { background: var(--code); padding: 1px 5px; border-radius: 5px; }
-.message-content ul, .message-content ol { padding-left: 22px; margin: 0 0 .8em; }
-.message-content h3, .message-content h2, .message-content h1 { font-family: Newsreader, serif; font-weight: 500; margin: .8em 0 .4em; }
 
 .message-content img {
     display: block;
@@ -418,17 +371,17 @@ body.light .topbar { background: #f8f7fccc; }
     border-radius: 12px;
 }
 
-.imgs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
-.imgs img { max-width: 220px; max-height: 220px; border-radius: 10px; object-fit: cover; display: block; }
+.thinking { color: var(--muted); }
 
-.act { display: flex; gap: 4px; margin-top: 6px; }
-.ab { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: var(--muted); padding: 5px 8px; border-radius: 8px; font-size: 13px; }
-.ab:hover { background: var(--panel-hover); color: var(--text); }
-.ab.on { color: var(--text); }
-
-.dots::after {
-    content: "●";
-    color: var(--accent);
+.thinking::after {
+    content: "";
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    margin-left: 7px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 9px 0 var(--accent), 18px 0 var(--accent);
     animation: pulse 1s infinite alternate;
 }
 
@@ -484,21 +437,6 @@ body.light .topbar { background: #f8f7fccc; }
 
 .composer-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
 
-.ib {
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    border: 0;
-    background: none;
-    color: var(--muted);
-    display: grid;
-    place-items: center;
-    flex-shrink: 0;
-}
-.ib:hover { color: var(--text); background: var(--panel-hover); }
-.ib.on { color: var(--on-accent, #111); background: var(--accent); }
-#mic.on { animation: pulse 1s infinite; }
-
 .send-button {
     min-width: 43px;
     height: 41px;
@@ -514,14 +452,6 @@ body.light .topbar { background: #f8f7fccc; }
 .send-button:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
 .send-button:disabled { opacity: .55; cursor: wait; }
 
-#thumbs { max-width: 790px; margin: 0 auto 8px; display: flex; gap: 10px; flex-wrap: wrap; }
-.th { position: relative; width: 60px; height: 60px; }
-.th img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
-.th button { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent, #111); font-size: 11px; line-height: 20px; padding: 0; }
-
-#spkbar { max-width: 790px; margin: 0 auto 8px; text-align: center; }
-#spkbar button { background: var(--panel); border: 1px solid var(--accent); color: var(--text); border-radius: 999px; padding: 6px 16px; font-size: 13px; }
-
 .small-note {
     margin: 9px 0 0;
     color: var(--muted);
@@ -529,72 +459,34 @@ body.light .topbar { background: #f8f7fccc; }
     font-size: 11px;
 }
 
-/* SETTINGS MODAL / PANEL */
-#set {
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.6);
-    backdrop-filter: blur(4px);
-    display: grid;
-    place-items: center;
-    z-index: 100;
-    padding: 20px;
-}
-#set .card {
-    background: var(--panel);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 24px;
-    width: 100%;
-    max-width: 460px;
-    max-height: 90vh;
-    overflow-y: auto;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    box-shadow: var(--shadow);
-}
-#set .row { display: flex; justify-content: space-between; align-items: center; }
-#set h2 { margin: 0; font: 500 24px Newsreader, Georgia, serif; }
-#set .row button { background: none; border: 0; color: var(--muted); font-size: 18px; }
-#set label { color: var(--muted); font-size: 13px; margin-top: 6px; font-weight: 600; }
-.seg { display: flex; border: 1px solid var(--border); border-radius: 11px; overflow: hidden; background: var(--panel-hover); }
-.seg button { flex: 1; background: none; border: 0; padding: 10px; color: var(--muted); }
-.seg button.on { background: var(--accent); color: var(--on-accent, #111); font-weight: 600; }
-.nrow { display: flex; gap: 8px; }
-#dn { flex: 1; min-width: 0; background: var(--input); border: 1px solid var(--border); border-radius: 11px; padding: 10px 12px; color: var(--text); font: inherit; }
-#dn:focus { border-color: var(--accent); outline: none; }
-#dsavae, #asave { background: var(--accent); color: var(--on-accent, #111); border: 0; border-radius: 11px; padding: 0 16px; font-weight: 600; }
-#dmsg { min-height: 20px; font-size: 13px; color: var(--muted); }
-#dmsg.bad { color: var(--err); }
-.chips { display: flex; flex-wrap: wrap; gap: 6px; }
-.chips button { background: var(--panel-hover); border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; color: var(--muted); font-size: 13px; }
-.chips button:hover { color: var(--text); }
-.chips button.on { background: var(--accent); color: var(--on-accent, #111); border-color: var(--accent); font-weight: 600; }
-#about { background: var(--input); border: 1px solid var(--border); border-radius: 11px; padding: 10px 12px; color: var(--text); font: inherit; resize: vertical; min-height: 72px; }
-#about:focus { border-color: var(--accent); outline: none; }
-.nrow2 { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 6px; }
-#amsg { font-size: 13px; color: var(--muted); }
-#amsg.bad { color: var(--err); }
+/* SETTINGS */
+.panel-view { flex: 1; min-height: 0; overflow-y: auto; padding: 30px 22px; }
+.settings-content { width: min(620px, 100%); margin: 0 auto; }
+.settings-content h1 { font-size: 28px; letter-spacing: -.03em; }
+.settings-intro { color: var(--muted); }
 
-/* AUTH OVERLAY */
-#auth {
-    position: fixed;
-    inset: 0;
-    background: var(--bg);
-    display: grid;
-    place-items: center;
-    z-index: 200;
+.setting-card {
     padding: 20px;
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 17px;
+    background: var(--panel);
 }
-#auth form { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
-#auth .logo { font-size: 40px; text-align: center; }
-#auth p.s { text-align: center; color: var(--muted); margin: -6px 0 8px; font-size: 14px; }
-#auth input { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px; color: var(--text); font: inherit; }
-#auth input:focus { border-color: var(--accent); outline: none; }
-#auth .go { background: var(--accent); color: var(--on-accent, #111); border: 0; border-radius: 12px; padding: 12px; font-weight: 600; }
-#auth .alt { background: none; border: 0; color: var(--muted); font-size: 13px; }
-#err { color: var(--err); min-height: 20px; font-size: 13px; text-align: center; }
+.setting-card h3 { margin: 0 0 5px; font-size: 16px; }
+.setting-card p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
+
+.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
+
+select, .secondary-button {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    color: var(--text);
+    background: var(--panel-hover);
+}
+.secondary-button:hover { filter: brightness(1.1); }
+
+.hidden { display: none !important; }
 
 .mobile-overlay { display: none; }
 
@@ -605,91 +497,74 @@ body.light .topbar { background: #f8f7fccc; }
         width: 70px;
         min-width: 70px;
         box-shadow: var(--shadow);
-        transform: translateX(-100%);
     }
-    .sidebar.open { transform: none; }
 
     .sidebar:not(.expanded) .brand-name,
     .sidebar:not(.expanded) .nav-label,
     .sidebar:not(.expanded) .history-heading,
     .sidebar:not(.expanded) .history-list,
-    .sidebar:not(.expanded) .sidebar-footer-label,
-    .sidebar:not(.expanded) .me small,
-    .sidebar:not(.expanded) .me button:not(#gear) { display: none; }
+    .sidebar:not(.expanded) .sidebar-footer-label { display: none; }
 
-    .sidebar.expanded { width: min(280px, 84vw); min-width: min(280px, 84vw); transform: none; }
+    .sidebar:not(.expanded) .brand { justify-content: center; }
+    .sidebar:not(.expanded) .nav-button { justify-content: center; padding: 10px 0; }
+
+    .sidebar.expanded { width: min(280px, 84vw); min-width: min(280px, 84vw); }
+
     .sidebar.expanded .brand-name,
     .sidebar.expanded .nav-label,
     .sidebar.expanded .history-heading,
     .sidebar.expanded .history-list,
-    .sidebar.expanded .sidebar-footer-label,
-    .sidebar.expanded .me small,
-    .sidebar.expanded .me button { display: block; }
-    .sidebar.expanded .me { display: flex; }
+    .sidebar.expanded .sidebar-footer-label { display: block; }
+
+    .sidebar.expanded .brand { justify-content: flex-start; }
+    .sidebar.expanded .nav-button { justify-content: flex-start; padding: 10px 12px; }
 
     .mobile-overlay.show {
         display: block;
         position: fixed;
-        z-index: 9;
+        z-index: 8;
         inset: 0;
         background: #0008;
         backdrop-filter: blur(2px);
     }
 
-    .topbar { padding: 0 16px; }
+    .topbar { padding: 0 12px 0 82px; }
     .chat-area { padding: 22px 13px 20px; }
-    .composer-wrap { padding: 8px 10px 12px 10px; }
+    .composer-wrap { padding: 8px 10px 12px 80px; }
+    .panel-view { padding: 22px 13px 25px 82px; }
+    .welcome { min-height: 40vh; }
+    .welcome h1 { font-size: 28px; }
+    .message { gap: 10px; }
+    .message.user .message-content { max-width: 91%; }
+    .composer { border-radius: 20px; }
+}
+
+@media (max-width: 420px) {
+    .topbar-title { font-size: 14px; }
+    #connectionStatus { max-width: 85px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .topbar-actions { gap: 6px; }
+    .icon-button { width: 36px; height: 36px; }
+    .send-button { padding: 0 12px; }
+    .small-note { font-size: 10px; }
 }
 </style>
 </head>
 
 <body>
-<div id="auth" hidden>
-  <form id="af">
-    <div class="logo">Laz<i>a</i>rus</div>
-    <p class="s" id="at">Sign in to pick up where you left off</p>
-    <input id="un" type="text" placeholder="Username (what Lazarus calls you)" maxlength="30" autocomplete="username" hidden>
-    <input id="em" type="email" placeholder="Email" autocomplete="email" required>
-    <input id="pw" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" minlength="6" required>
-    <div id="err"></div>
-    <button class="go" id="ab">Sign in</button>
-    <button class="alt" type="button" id="sw">New here? Create an account</button>
-    <button class="alt" type="button" id="gs">Continue as guest</button>
-  </form>
-</div>
-
-<div id="set" hidden>
-  <div class="card" role="dialog" aria-modal="true" aria-labelledby="st">
-    <div class="row"><h2 id="st">Settings</h2><button id="sx" aria-label="Close settings">✕</button></div>
-    <label>Theme</label>
-    <div class="seg" id="seg"><button data-t="dark">Dark</button><button data-t="light">Light</button><button data-t="system">System</button></div>
-    <label for="dn">What Lazarus calls you</label>
-    <div class="nrow"><input id="dn" maxlength="30" autocomplete="off"><button id="dsave">Save</button></div>
-    <div id="dmsg" role="status"></div>
-    <label>Personality</label>
-    <div class="chips" id="pers"><button data-p="default">Default</button><button data-p="friendly">Friendly</button><button data-p="professional">Professional</button><button data-p="witty">Witty</button><button data-p="direct">Direct</button><button data-p="nerdy">Nerdy</button></div>
-    <label>Response length</label>
-    <div class="seg" id="lens"><button data-l="short">Short</button><button data-l="balanced">Balanced</button><button data-l="detailed">Detailed</button></div>
-    <label for="about">Anything else Lazarus should know or do</label>
-    <textarea id="about" maxlength="500" placeholder="e.g. I'm learning Spanish. Explain things with examples."></textarea>
-    <div class="nrow2"><span id="amsg" role="status"></span><button id="asave">Save</button></div>
-  </div>
-</div>
-
 <div class="app">
     <div id="mobileOverlay" class="mobile-overlay"></div>
 
     <aside id="sidebar" class="sidebar">
         <button class="brand" id="sidebarToggle" title="Expand or collapse sidebar" aria-label="Toggle sidebar">
             <span class="brand-icon">✦</span>
-            <span class="brand-name logo">Laz<i>a</i>rus</span>
+            <span class="brand-name">LAZARUS AI</span>
         </button>
 
         <nav class="nav">
             <button class="nav-button" id="newChatButton" title="New chat">
                 <span class="nav-icon">＋</span><span class="nav-label">New chat</span>
             </button>
-            <button class="nav-button" id="settingsNavButton" title="Settings">
+            <button class="nav-button" id="settingsButton" title="Settings">
                 <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
             </button>
         </nav>
@@ -697,22 +572,21 @@ body.light .topbar { background: #f8f7fccc; }
         <div class="history-heading">Your chats</div>
         <div id="historyList" class="history-list"></div>
 
-        <div class="me">
-            <div class="av" id="av"></div>
-            <small id="who"></small>
-            <button id="gear" title="Settings" aria-label="Settings">⚙</button>
-            <button id="out" title="Sign out">Sign out</button>
+        <div class="sidebar-footer">
+            <button class="nav-button" id="clearHistoryButton" title="Delete all chats">
+                <span class="nav-icon">⌫</span>
+                <span class="nav-label sidebar-footer-label">Clear history</span>
+            </button>
         </div>
     </aside>
 
     <main class="main">
         <header class="topbar">
             <div class="topbar-left">
-                <button class="icon-button" id="menuToggle" aria-label="Open menu" style="display:none">☰</button>
                 <div class="topbar-title" id="topbarTitle">Lazarus AI</div>
             </div>
             <div class="topbar-actions">
-                <span class="status" id="connectionStatus">Online</span>
+                <span class="status" id="connectionStatus">Checking…</span>
                 <button class="icon-button" id="themeQuickButton" title="Toggle theme" aria-label="Toggle theme">☼</button>
             </div>
         </header>
@@ -721,24 +595,55 @@ body.light .topbar { background: #f8f7fccc; }
             <div id="messages" class="messages"></div>
         </section>
 
+        <section id="settingsView" class="panel-view hidden">
+            <div class="settings-content">
+                <h1>Settings</h1>
+                <p class="settings-intro">Make Lazarus feel like yours.</p>
+
+                <div class="setting-card">
+                    <h3>Appearance</h3>
+                    <p>Choose your preferred theme.</p>
+                    <div class="setting-row">
+                        <label for="themeSelect">Theme</label>
+                        <select id="themeSelect">
+                            <option value="dark">Dark mode</option>
+                            <option value="light">Light mode</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <h3>Text size</h3>
+                    <p>Adjust the text size across the interface.</p>
+                    <div class="setting-row">
+                        <label for="textSizeSelect">Text size</label>
+                        <select id="textSizeSelect">
+                            <option value="small">Small</option>
+                            <option value="medium">Medium</option>
+                            <option value="large">Large</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="setting-card">
+                    <h3>Chat history</h3>
+                    <p>Saved conversations stay in this browser on this device.</p>
+                    <button class="secondary-button" id="settingsClearHistory">Delete all chats</button>
+                </div>
+
+                <button class="secondary-button" id="backToChat">← Back to chat</button>
+            </div>
+        </section>
+
         <footer id="composerWrap" class="composer-wrap">
-            <div id="thumbs" hidden></div>
-            <div id="spkbar" hidden><button id="spstop">■ Stop speaking</button></div>
             <div class="composer">
-                <div class="composer-bottom" style="align-items: center;">
+                <textarea id="messageInput" rows="1" maxlength="12000"
+                    placeholder="Message Lazarus..." aria-label="Message Lazarus"></textarea>
+                <div class="composer-bottom">
                     <div class="composer-tools">
-                        <button class="ib" id="att" title="Attach photos" aria-label="Attach photos">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg>
-                        </button>
-                        <input type="file" id="file" accept="image/*" multiple hidden>
+                        <span class="status" id="inputHint">Enter to send · Shift + Enter for a new line</span>
                     </div>
-                    <textarea id="messageInput" rows="1" maxlength="12000" placeholder="Message Lazarus..." aria-label="Message Lazarus"></textarea>
-                    <div class="composer-tools">
-                        <button class="ib" id="mic" title="Speak your message" aria-label="Speak your message">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>
-                        </button>
-                        <button class="send-button" id="sendButton" aria-label="Send">↑</button>
-                    </div>
+                    <button class="send-button" id="sendButton">↑</button>
                 </div>
             </div>
             <p class="small-note">Lazarus can make mistakes. Check important information.</p>
@@ -749,858 +654,489 @@ body.light .topbar { background: #f8f7fccc; }
 <script>
 "use strict";
 
-const CFG = {
-  SB_URL: 'https://gkoullazvjzzgbpvuchw.supabase.co',
-  SB_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrb3VsbGF6dmp6emdicHZ1Y2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MjgxMzIsImV4cCI6MjEwNzMwNDEzMn0.ovH0g9TjDKQLeln-D2Ar-Lq4RogyciIP08UuFXKwg0o',
-  SYSTEM: 'You are Lazarus, a helpful, clear and honest AI assistant created by Notanaidev and Xavier. If anyone asks who made or created you, say you were created by Notanaidev and Xavier. Use Markdown when it helps.'
-};
+/* Keep the backend URL in exactly one place. */
+const API_BASE = "https://lazarus-backend-75ik.onrender.com";
+const CHAT_KEY = "lazarus_saved_chats_v1";
+const SETTINGS_KEY = "lazarus_preferences_v1";
 
 const $ = id => document.getElementById(id);
-const useSB = !!CFG.SB_ANON;
-const GUEST = { id: 'guest', email: '', guest: true };
-let user = null, chats = [], cur = null, ctrl = null, signup = false;
-let prefName = '';
-let prefs = { personality: 'default', length: 'balanced', about: '' };
 
-const reserved = n => ['xavier', 'notanaidev'].includes(String(n).toLowerCase().replace(/[^a-z0-9]/g, ''));
-const defName = u => (u && !u.guest && u.email) ? u.email.split('@')[0] : '';
-const nameOf = u => prefName || (reserved(defName(u)) ? '' : defName(u));
+let chats = [];
+let currentChatId = null;
+let sending = false;
 
-const PERS = {
-  default: '',
-  friendly: 'Personality: warm, friendly and encouraging, with a casual tone.',
-  professional: 'Personality: professional, polished and precise. No slang.',
-  witty: 'Personality: witty and playful with light humor, but never at the cost of being helpful.',
-  direct: 'Personality: direct and blunt. No fluff or filler. Get straight to the point.',
-  nerdy: 'Personality: curious and nerdy. Enjoy explaining how things work, with interesting details.'
-};
-const LENS = {
-  short: 'Keep replies short, a few sentences at most unless the user asks for more.',
-  balanced: '',
-  detailed: 'Give thorough, detailed answers with examples where useful.'
-};
-const sysPrompt = () => [
-  CFG.SYSTEM,
-  nameOf(user) ? "The user's name is " + nameOf(user) + '. Address them by that name naturally, but not in every message.' : '',
-  PERS[prefs.personality] || '',
-  LENS[prefs.length] || '',
-  prefs.about ? 'The user also asked you to follow these instructions: ' + prefs.about : ''
-].filter(Boolean).join(' ');
-
-/* Storage Layer */
-const LS = {
-  get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},
-  set:(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v));return true}catch{return false}}
-};
-const sha = async s => [...new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)))].map(b=>b.toString(16).padStart(2,'0')).join('');
-const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now()+'-'+Math.random().toString(16).slice(2));
-
-async function sb(path, opt = {}, retry = true) {
-  const s = LS.get('lz_session');
-  const r = await fetch(CFG.SB_URL + path, { ...opt, headers: { apikey: CFG.SB_ANON, 'Content-Type':'application/json', Authorization: 'Bearer ' + (s?.access_token || CFG.SB_ANON), ...(opt.headers||{}) } });
-  if (r.status === 401 && retry && s?.refresh_token) {
-    const rr = await fetch(CFG.SB_URL + '/auth/v1/token?grant_type=refresh_token', { method:'POST', headers:{apikey:CFG.SB_ANON,'Content-Type':'application/json'}, body: JSON.stringify({refresh_token:s.refresh_token}) });
-    if (rr.ok) { LS.set('lz_session', await rr.json()); return sb(path, opt, false); }
-  }
-  return r;
+function makeId() {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
 }
 
-const Auth = {
-  async login(email, pw, create, username) {
-    if (useSB) {
-      if (create && reserved(username)) {
-        const c = await sb('/rest/v1/rpc/name_available', { method:'POST', body: JSON.stringify({ n: username }) }, false);
-        if (c.ok && (await c.json()) === false) throw new Error('That username is already taken.');
-      }
-      const r = await sb(create ? '/auth/v1/signup' : '/auth/v1/token?grant_type=password', { method:'POST', body: JSON.stringify(create ? { email, password:pw, data:{ username } } : { email, password:pw }) }, false);
-      const j = await r.json();
-      const em = j.msg || j.error_description || j.message || '';
-      if (!r.ok) throw new Error(/database error/i.test(em) ? 'That username is already taken.' : (em || 'Something went wrong'));
-      if (!j.access_token) throw new Error('Check your email to confirm your account, then sign in.');
-      LS.set('lz_session', j);
-      return { id: j.user.id, email: j.user.email };
+function safeLoad(key, fallback) {
+    try {
+        const raw = localStorage.getItem(key);
+        return raw ? JSON.parse(raw) : fallback;
+    } catch {
+        return fallback;
     }
-    const users = LS.get('lz_users', {}), h = await sha(pw);
-    if (create) { if (reserved(username)) throw new Error('That username is reserved.'); if (users[email]) throw new Error('That email already has an account.'); users[email] = h; LS.set('lz_users', users); LS.set('lz_name_' + email, username); }
-    else if (users[email] !== h) throw new Error('Wrong email or password.');
-    LS.set('lz_session', { local: email });
-    return { id: email, email };
-  },
-  async restore() {
-    const s = LS.get('lz_session'); if (!s) return null;
-    if (!useSB) return s.local ? { id: s.local, email: s.local } : null;
-    if (!s.access_token) return null;
-    const r = await sb('/auth/v1/user'); if (!r.ok) return null;
-    const u = await r.json(); return { id: u.id, email: u.email };
-  },
-  out() { localStorage.removeItem('lz_session'); }
-};
+}
 
-const Store = {
-  async load() {
-    if (!useSB || user.guest) return LS.get('lz_chats_' + user.id, []);
-    const r = await sb('/rest/v1/chats?select=id,title,messages,updated_at&order=updated_at.desc');
-    return r.ok ? r.json() : [];
-  },
-  async save(c) {
-    c.updated_at = new Date().toISOString();
-    if (!useSB || user.guest) {
-      if (!LS.set('lz_chats_' + user.id, chats)) {
-        chats.forEach(x => x.messages.forEach(m => { if (m.images) { delete m.images; m.content = m.content || '[photo]'; } }));
-        LS.set('lz_chats_' + user.id, chats);
-      }
-      return;
+function saveChats() {
+    try {
+        localStorage.setItem(CHAT_KEY, JSON.stringify(chats));
+    } catch (error) {
+        console.error("Could not save chats:", error);
     }
-    await sb('/rest/v1/chats', { method:'POST', headers:{Prefer:'resolution=merge-duplicates'}, body: JSON.stringify({ id:c.id, user_id:user.id, title:c.title, messages:c.messages, updated_at:c.updated_at }) });
-  },
-  async del(id) {
-    if (!useSB || user.guest) { LS.set('lz_chats_' + user.id, chats); return; }
-    await sb('/rest/v1/chats?id=eq.' + id, { method:'DELETE' });
-  }
-};
-
-/* Markdown parser helper */
-const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-function md(src) {
-  const blocks = [];
-  let t = esc(src || '').replace(/```(\w*)\n?([\s\S]*?)(```|$)/g, (_, l, c) => { blocks.push('<pre><code>' + c.replace(/\n$/,'') + '</code></pre>'); return '\u0000' + (blocks.length-1) + '\u0000'; });
-  t = t.split(/\n{2,}/).map(p => {
-    if (/^\u0000\d+\u0000$/.test(p.trim())) return p.trim();
-    if (/^#{1,3} /.test(p)) return p.replace(/^#{1,3} (.*)$/, '<h3>$1</h3>');
-    if (/^(\s*[-*] .*(\n|$))+$/.test(p)) return '<ul>' + p.trim().split('\n').map(l => '<li>' + l.replace(/^\s*[-*] /,'') + '</li>').join('') + '</ul>';
-    if (/^(\s*\d+\. .*(\n|$))+$/.test(p)) return '<ol>' + p.trim().split('\n').map(l => '<li>' + l.replace(/^\s*\d+\. /,'') + '</li>').join('') + '</ol>';
-    return '<p>' + p.replace(/\n/g,'<br>') + '</p>';
-  }).join('');
-  t = t.replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
-  return t.replace(/\u0000(\d+)\u0000/g, (_, i) => blocks[i]);
 }
 
-/* UI Rendering Functions */
-function renderHistory() {
-  const list = $("historyList");
-  list.replaceChildren();
-
-  if (!chats.length) {
-    const empty = document.createElement("div");
-    empty.className = "empty-history";
-    empty.textContent = "Your chats will appear here.";
-    list.appendChild(empty);
-    return;
-  }
-
-  chats.forEach(chat => {
-    const row = document.createElement("div");
-    row.className = "history-item";
-
-    const open = document.createElement("button");
-    open.className = "history-open" + (chat.id === cur?.id ? " selected" : "");
-    open.textContent = chat.title || "New chat";
-    open.title = chat.title || "New chat";
-    open.addEventListener("click", () => {
-      cur = chat;
-      renderHistory();
-      renderMessages();
-      closeMobileSidebar();
-    });
-
-    const remove = document.createElement("button");
-    remove.className = "history-delete";
-    remove.textContent = "✕";
-    remove.title = "Delete chat";
-    remove.setAttribute("aria-label", "Delete " + (chat.title || "chat"));
-    remove.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      if (ctrl) return;
-      chats = chats.filter(item => item.id !== chat.id);
-      await Store.del(chat.id);
-      if (cur?.id === chat.id) cur = chats[0] || null;
-      renderHistory();
-      renderMessages();
-    });
-
-    row.append(open, remove);
-    list.appendChild(row);
-  });
+function currentChat() {
+    return chats.find(chat => chat.id === currentChatId) || null;
 }
 
-const ICO = d => '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
-const BTNS = '<button class="ab copy" title="Copy response">' + ICO('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>') + '<span>Copy</span></button>'
-  + '<button class="ab regen" title="Regenerate response">' + ICO('<path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/>') + '<span>Regenerate</span></button>'
-  + '<button class="ab spk" title="Read aloud">' + ICO('<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>') + '<span>Listen</span></button>';
-
-function bubble(role, text, images, messageIndex = -1) {
-  const container = $("messages");
-  const m = document.createElement("article");
-  m.className = "message " + (role === 'user' ? "user" : "assistant");
-
-  if (role === 'user') {
-    const b = document.createElement("div");
-    b.className = "message-content";
-    if (images && images.length) {
-      const d = document.createElement("div");
-      d.className = "imgs";
-      images.forEach(u => {
-        const i = new Image();
-        i.src = u;
-        i.alt = "Attached photo";
-        d.appendChild(i);
-      });
-      b.appendChild(d);
-    }
-    if (text) b.appendChild(document.createTextNode(text));
-    m.appendChild(b);
-    container.appendChild(m);
-    return b;
-  }
-
-  const avatar = document.createElement("div");
-  avatar.className = "avatar";
-  avatar.textContent = "✦";
-
-  const contentWrap = document.createElement("div");
-  contentWrap.className = "message-content";
-  
-  const t = document.createElement("div");
-  t.className = "t";
-  t._raw = text;
-  
-  const act = document.createElement("div");
-  act.className = "act";
-  if (!text) act.hidden = true;
-  act.innerHTML = BTNS;
-  const regenBtn = act.querySelector('.regen');
-  if (regenBtn) regenBtn.dataset.index = messageIndex;
-
-  t.innerHTML = text ? md(text) : '<span class="dots"></span>';
-  contentWrap.append(t, act);
-  m.append(avatar, contentWrap);
-  container.appendChild(m);
-  return t;
-}
-
-function renderMessages() {
-  const container = $("messages");
-  container.replaceChildren();
-
-  if (!cur || cur.messages.length === 0) {
-    const welcome = document.createElement("div");
-    welcome.className = "welcome";
-
-    const logo = document.createElement("div");
-    logo.className = "welcome-logo";
-    logo.textContent = "✦";
-
-    const heading = document.createElement("h1");
-    heading.textContent = nameOf(user) ? `Hi ${nameOf(user)}. What should we bring back to life today?` : "What can I help with?";
-
-    const description = document.createElement("p");
-    description.textContent = "Ask Lazarus anything.";
-
-    const sug = document.createElement("div");
-    sug.className = "sug";
-    ['Explain how a CPU works', 'Help me write a cover letter', 'Debug my JavaScript', 'Plan a weekend trip'].forEach(s => {
-      const b = document.createElement("button");
-      b.textContent = s;
-      b.onclick = () => { $("messageInput").value = s; sendMessage(); };
-      sug.appendChild(b);
-    });
-
-    welcome.append(logo, heading, description, sug);
-    container.appendChild(welcome);
-  } else {
-    cur.messages.forEach((message, i) => {
-      bubble(message.role === 'user' ? 'user' : 'assistant', message.content, message.images, i);
-    });
-  }
-
-  $("topbarTitle").textContent = cur?.title || "Lazarus AI";
-
-  requestAnimationFrame(() => {
-    $("chatView").scrollTop = $("chatView").scrollHeight;
-  });
+function makeTitle(text) {
+    const clean = String(text || "").replace(/\s+/g, " ").trim();
+    if (!clean) return "New chat";
+    return clean.length > 36 ? clean.slice(0, 36).trimEnd() + "…" : clean;
 }
 
 function newChat() {
-  const chat = {
-    id: uid(),
-    title: "New chat",
-    messages: [],
-    createdAt: Date.now(),
-    updatedAt: Date.now()
-  };
-
-  chats.unshift(chat);
-  cur = chat;
-  Store.save(chat);
-  renderHistory();
-  renderMessages();
-  closeMobileSidebar();
-  $("messageInput").focus();
-}
-
-/* Voice and Audio synthesis */
-const synth = window.speechSynthesis;
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null, spkBtn = null, listening = false, speakTok = 0, pending = 0, handsFree = false, micSend = false;
-
-const cleanText = t => t.replace(/```[\s\S]*?(```|$)/g, ' Code block. ').replace(/`/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_#>|~]+/g, '').replace(/[ \t]+/g, ' ');
-
-function updateBtns() {
-  document.querySelectorAll('.spk').forEach(b => {
-    const on = b === spkBtn && pending > 0;
-    b.classList.toggle('on', on);
-    b.lastChild.textContent = on ? 'Stop' : 'Listen';
-  });
-  $("mic").classList.toggle('on', listening);
-  $("spkbar").hidden = pending <= 0;
-}
-
-function stopSpeak() {
-  speakTok++;
-  pending = 0;
-  if (synth) synth.cancel();
-  updateBtns();
-}
-
-function afterSpeak() {
-  updateBtns();
-  if (handsFree && !ctrl && !listening) startListen();
-}
-
-function speakChunk(txt, tok) {
-  const t = txt.trim();
-  if (!synth || !t || tok !== speakTok) return;
-  const u = new SpeechSynthesisUtterance(t);
-  pending++;
-  updateBtns();
-  u.onend = u.onerror = () => {
-    if (tok !== speakTok) return;
-    pending--;
-    if (pending <= 0) {
-      pending = 0;
-      afterSpeak();
-    }
-  };
-  synth.speak(u);
-}
-
-function feed(st, text, final, tok) {
-  let rest = text.slice(st.i), m;
-  const re = /^[\s\S]*?([.!?:;]+["')\]]*\s|\n)/;
-  while ((m = re.exec(rest))) {
-    speakChunk(m[0], tok);
-    st.i += m[0].length;
-    rest = rest.slice(m[0].length);
-  }
-  if (final && rest.trim()) {
-    speakChunk(rest, tok);
-    st.i = text.length;
-  }
-}
-
-function startListen() {
-  if (!SR) { alert('Speech recognition is not supported in this browser. Try Chrome, Edge or Safari.'); return; }
-  if (ctrl) ctrl.abort();
-  stopSpeak();
-  if (listening) return;
-  const r = rec = new SR();
-  r.lang = navigator.language || 'en-US';
-  r.interimResults = true;
-  r.continuous = false;
-  const base = $("messageInput").value ? $("messageInput").value + ' ' : '';
-  let fin = '';
-  r.onresult = e => {
-    let interim = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const x = e.results[i];
-      if (x.isFinal) fin += x[0].transcript;
-      else interim += x[0].transcript;
-    }
-    $("messageInput").value = base + fin + interim;
-    $("messageInput").style.height = 'auto';
-    $("messageInput").style.height = Math.min($("messageInput").scrollHeight, 180) + 'px';
-  };
-  r.onend = () => {
-    listening = false;
-    updateBtns();
-    if (!r._cancel && $("messageInput").value.trim()) {
-      micSend = true;
-      sendMessage();
-    }
-  };
-  r.onerror = e => { if (e.error === 'not-allowed') alert('Allow microphone access to talk to Lazarus.'); };
-  r.start();
-  listening = true;
-  updateBtns();
-}
-
-function stopListen(abort) {
-  if (!rec) return;
-  rec._cancel = !!abort;
-  abort ? rec.abort() : rec.stop();
-}
-
-function speakMsg(t, btn) {
-  const was = btn.classList.contains('on');
-  stopSpeak();
-  if (was) return;
-  handsFree = false;
-  spkBtn = btn;
-  feed({ i: 0 }, cleanText(t._raw || t.innerText), true, speakTok);
-  updateBtns();
-}
-
-async function copyText(s, b) {
-  try { await navigator.clipboard.writeText(s); }
-  catch {
-    const a = document.createElement('textarea');
-    a.value = s;
-    document.body.appendChild(a);
-    a.select();
-    document.execCommand('copy');
-    a.remove();
-  }
-  const l = b.lastChild;
-  l.textContent = 'Copied';
-  setTimeout(() => l.textContent = 'Copy', 1500);
-}
-
-/* Image attachment handlers */
-let pend = [];
-function shrink(file) {
-  return new Promise((res, rej) => {
-    const img = new Image(), url = URL.createObjectURL(file);
-    img.onload = () => {
-      const k = Math.min(1, 1280 / Math.max(img.width, img.height));
-      const c = document.createElement('canvas');
-      c.width = Math.max(1, Math.round(img.width * k));
-      c.height = Math.max(1, Math.round(img.height * k));
-      const g = c.getContext('2d');
-      g.fillStyle = '#fff';
-      g.fillRect(0, 0, c.width, c.height);
-      g.drawImage(img, 0, 0, c.width, c.height);
-      URL.revokeObjectURL(url);
-      res(c.toDataURL('image/jpeg', 0.8));
+    const chat = {
+        id: makeId(),
+        title: "New chat",
+        messages: [],
+        createdAt: Date.now(),
+        updatedAt: Date.now()
     };
-    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Could not read that image.')); };
-    img.src = url;
-  });
+
+    chats.unshift(chat);
+    currentChatId = chat.id;
+    saveChats();
+    renderHistory();
+    showChat();
+    renderMessages();
+    closeMobileSidebar();
+    $("messageInput").focus();
 }
 
-function renderThumbs() {
-  const t = $("thumbs");
-  t.innerHTML = '';
-  t.hidden = !pend.length;
-  pend.forEach((u, i) => {
-    const d = document.createElement('div');
-    d.className = 'th';
-    d.innerHTML = '<img alt="Photo to send"><button aria-label="Remove photo">✕</button>';
-    d.firstChild.src = u;
-    d.lastChild.onclick = () => { pend.splice(i, 1); renderThumbs(); };
-    t.appendChild(d);
-  });
+function openChat(id) {
+    if (!chats.some(chat => chat.id === id)) return;
+    currentChatId = id;
+    renderHistory();
+    showChat();
+    renderMessages();
+    closeMobileSidebar();
 }
 
-async function addFiles(files) {
-  for (const f of files) {
-    if (!f.type.startsWith('image/')) continue;
-    if (pend.length >= 3) { alert('You can attach up to 3 photos per message.'); break; }
-    try { pend.push(await shrink(f)); } catch (e) { alert(e.message); }
-  }
-  renderThumbs();
-}
+function deleteChat(id) {
+    const chat = chats.find(item => item.id === id);
+    if (!chat || !confirm(`Delete "${chat.title}"?`)) return;
 
-function apiMessages() {
-  let budget = 3;
-  const recent = cur.messages.slice(-30);
-  const out = recent.map((m, i) => {
-    const fromEnd = recent.length - 1 - i;
-    if (m.role === 'user' && m.images && m.images.length && fromEnd < 8) return { m, imgs: m.images };
-    return { m, imgs: [] };
-  }).reverse().map(({ m, imgs }) => {
-    if (imgs.length && budget > 0) {
-      const use = imgs.slice(0, budget);
-      budget -= use.length;
-      return { role: 'user', content: [{ type: 'text', text: m.content || 'What is in this image?' }, ...use.map(u => ({ type: 'image_url', image_url: { url: u } }))] };
+    chats = chats.filter(item => item.id !== id);
+
+    if (currentChatId === id) {
+        currentChatId = chats[0]?.id || null;
     }
-    return { role: m.role, content: m.content || (m.images && m.images.length ? '[photo]' : ' ') };
-  }).reverse();
-  return [{ role: 'system', content: sysPrompt() }, ...out];
+
+    saveChats();
+    renderHistory();
+
+    if (!currentChatId) newChat();
+    else {
+        showChat();
+        renderMessages();
+    }
 }
 
-async function sendMessage(regenIndex = null) {
-  if (ctrl) {
-    ctrl.abort();
-    stopSpeak();
-    return;
-  }
-  stopSpeak();
-  if (listening) stopListen(true);
-  handsFree = micSend;
-  micSend = false;
+function clearHistory() {
+    if (!chats.length) return;
+    if (!confirm("Delete all saved conversations? This cannot be undone.")) return;
 
-  const regenerating = Number.isInteger(regenIndex);
-  const input = $("messageInput");
-  const text = input.value.trim();
+    chats = [];
+    currentChatId = null;
+    saveChats();
+    renderHistory();
+    newChat();
+}
 
-  if (!regenerating && !text && !pend.length) {
-    input.focus();
-    return;
-  }
+function renderHistory() {
+    const list = $("historyList");
+    list.replaceChildren();
 
-  if (!cur) newChat();
-
-  if (regenerating) {
-    if (regenIndex < 0 || regenIndex >= cur.messages.length || cur.messages[regenIndex].role !== 'assistant') return;
-    cur.messages = cur.messages.slice(0, regenIndex);
-  } else {
-    if (cur.messages.length === 0) {
-      cur.title = text.length > 36 ? text.slice(0, 36).trimEnd() + "…" : (text || "Photo");
+    if (!chats.length) {
+        const empty = document.createElement("div");
+        empty.className = "empty-history";
+        empty.textContent = "Your chats will appear here.";
+        list.appendChild(empty);
+        return;
     }
-    cur.messages.push({ role: 'user', content: text, ...(pend.length ? { images: [...pend] } : {}) });
-    pend = [];
-    renderThumbs();
+
+    chats.forEach(chat => {
+        const row = document.createElement("div");
+        row.className = "history-item";
+
+        const open = document.createElement("button");
+        open.className = "history-open" + (chat.id === currentChatId ? " selected" : "");
+        open.textContent = chat.title || "New chat";
+        open.title = chat.title || "New chat";
+        open.addEventListener("click", () => openChat(chat.id));
+
+        const remove = document.createElement("button");
+        remove.className = "history-delete";
+        remove.textContent = "×";
+        remove.title = "Delete chat";
+        remove.setAttribute("aria-label", "Delete " + (chat.title || "chat"));
+        remove.addEventListener("click", () => deleteChat(chat.id));
+
+        row.append(open, remove);
+        list.appendChild(row);
+    });
+}
+
+function showChat() {
+    $("chatView").classList.remove("hidden");
+    $("composerWrap").classList.remove("hidden");
+    $("settingsView").classList.add("hidden");
+    $("topbarTitle").textContent = currentChat()?.title || "Lazarus AI";
+}
+
+function showSettings() {
+    $("chatView").classList.add("hidden");
+    $("composerWrap").classList.add("hidden");
+    $("settingsView").classList.remove("hidden");
+    $("topbarTitle").textContent = "Settings";
+    closeMobileSidebar();
+}
+
+function renderMessages() {
+    const container = $("messages");
+    container.replaceChildren();
+
+    const chat = currentChat();
+
+    if (!chat || chat.messages.length === 0) {
+        const welcome = document.createElement("div");
+        welcome.className = "welcome";
+
+        const logo = document.createElement("div");
+        logo.className = "welcome-logo";
+        logo.textContent = "✦";
+
+        const heading = document.createElement("h1");
+        heading.textContent = "What can I help with?";
+
+        const description = document.createElement("p");
+        description.textContent = "Ask Lazarus anything.";
+
+        welcome.append(logo, heading, description);
+        container.appendChild(welcome);
+    } else {
+        chat.messages.forEach(message => {
+            const row = document.createElement("article");
+            row.className = "message " + (message.role === "user" ? "user" : "assistant");
+
+            const avatar = document.createElement("div");
+            avatar.className = "avatar";
+            avatar.textContent = message.role === "user" ? "Y" : "✦";
+
+            const content = document.createElement("div");
+            content.className = "message-content";
+
+            if (message.thinking) {
+                content.classList.add("thinking");
+            }
+
+            content.textContent = message.content || "";
+
+            row.append(avatar, content);
+            container.appendChild(row);
+        });
+    }
+
+    $("topbarTitle").textContent = chat?.title || "Lazarus AI";
+
+    requestAnimationFrame(() => {
+        $("chatView").scrollTop = $("chatView").scrollHeight;
+    });
+}
+
+function addUserMessage(content) {
+    const chat = currentChat();
+    if (!chat) return null;
+
+    const message = { role: "user", content };
+    chat.messages.push(message);
+
+    if (chat.title === "New chat") {
+        chat.title = makeTitle(content);
+    }
+
+    chat.updatedAt = Date.now();
+    chats.sort((a, b) => b.updatedAt - a.updatedAt);
+    saveChats();
+    renderHistory();
+    return message;
+}
+
+async function sendMessage() {
+    if (sending) return;
+
+    const input = $("messageInput");
+    const text = input.value.trim();
+
+    if (!text) {
+        input.focus();
+        return;
+    }
+
+    if (!currentChat()) newChat();
+
+    const chat = currentChat();
+    if (!chat) return;
+
     input.value = "";
     input.style.height = "auto";
-  }
 
-  renderHistory();
-  renderMessages();
+    addUserMessage(text);
 
-  const out = bubble('assistant', '', null, cur.messages.length);
-  let acc = '';
-  ctrl = new AbortController();
-  $("sendButton").disabled = true;
-  $("sendButton").textContent = "■";
-  $("connectionStatus").textContent = "Thinking…";
+    const waiting = {
+        role: "assistant",
+        content: "Lazarus is thinking…",
+        thinking: true
+    };
 
-  const tok = speakTok, st = { i: 0 };
+    chat.messages.push(waiting);
+    sending = true;
+    $("sendButton").disabled = true;
+    $("sendButton").textContent = "…";
+    $("connectionStatus").textContent = "Thinking…";
 
-  try {
-    const response = await sb('/functions/v1/groq-chat', {
-      method: 'POST',
-      signal: ctrl.signal,
-      body: JSON.stringify({ messages: apiMessages() })
-    });
+    renderMessages();
 
-    if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
-      throw new Error(data.error?.message || `Request failed (${response.status}).`);
-    }
+    try {
+        /*
+         * This backend currently accepts text chat requests.
+         * It does not require a Supabase token in this frontend.
+         */
+        const history = chat.messages
+            .filter(item => item !== waiting)
+            .slice(0, -1)
+            .slice(-20)
+            .map(item => ({
+                role: item.role === "assistant" ? "assistant" : "user",
+                content: item.content || ""
+            }));
 
-    const rd = response.body.getReader(), dec = new TextDecoder();
-    let buf = '';
-    for (;;) {
-      const { done, value } = await rd.read();
-      if (done) break;
-      buf += dec.decode(value, { stream: true });
-      const lines = buf.split('\n');
-      buf = lines.pop();
-      for (const l of lines) {
-        if (!l.startsWith('data: ') || l.includes('[DONE]')) continue;
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 60000);
+
+        let response;
+
         try {
-          const d = JSON.parse(l.slice(6)).choices[0].delta.content;
-          if (d) {
-            acc += d;
-            out._raw = acc;
-            out.innerHTML = md(acc);
-            $("chatView").scrollTop = $("chatView").scrollHeight;
-            if (handsFree) feed(st, cleanText(acc), false, tok);
-          }
-        } catch {}
-      }
+            response = await fetch(API_BASE + "/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: text, history }),
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+            throw new Error(
+                data.error || data.message || `Request failed (${response.status}).`
+            );
+        }
+
+        const reply = data.reply || data.response || data.message;
+
+        if (typeof reply !== "string" || !reply.trim()) {
+            throw new Error("The backend responded, but it returned no reply.");
+        }
+
+        waiting.content = reply;
+        waiting.thinking = false;
+        $("connectionStatus").textContent = "Backend online";
+    } catch (error) {
+        console.error("Lazarus chat error:", error);
+
+        waiting.thinking = false;
+
+        if (error.name === "AbortError") {
+            waiting.content = "Lazarus took too long to respond. Please try again.";
+        } else if (error instanceof TypeError) {
+            waiting.content =
+                "I couldn't reach the chat server. Check your internet connection and try again.";
+        } else {
+            waiting.content = "Couldn't get a response: " + (error.message || "Unknown error");
+        }
+
+        $("connectionStatus").textContent = "Chat error";
+    } finally {
+        chat.updatedAt = Date.now();
+        chats.sort((a, b) => b.updatedAt - a.updatedAt);
+        saveChats();
+        renderHistory();
+        renderMessages();
+
+        sending = false;
+        $("sendButton").disabled = false;
+        $("sendButton").textContent = "↑";
+        input.focus();
     }
-  } catch (error) {
-    if (error.name !== 'AbortError') {
-      console.error("Lazarus chat error:", error);
-      acc += (acc ? '\n\n' : '') + "Error: " + error.message;
-      out._raw = acc;
-      out.innerHTML = md(acc);
+}
+
+function applySettings() {
+    const settings = safeLoad(SETTINGS_KEY, {});
+    const theme = settings.theme === "light" ? "light" : "dark";
+    const size = ["small", "medium", "large"].includes(settings.textSize)
+        ? settings.textSize : "medium";
+
+    document.body.classList.toggle("light", theme === "light");
+
+    document.documentElement.style.setProperty(
+        "--font-size",
+        size === "small" ? "14px" : size === "large" ? "19px" : "16px"
+    );
+
+    $("themeSelect").value = theme;
+    $("textSizeSelect").value = size;
+    $("themeQuickButton").textContent = theme === "dark" ? "☼" : "☾";
+}
+
+function saveSettings() {
+    try {
+        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
+            theme: $("themeSelect").value,
+            textSize: $("textSizeSelect").value
+        }));
+    } catch (error) {
+        console.error("Could not save settings:", error);
     }
-  }
 
-  if (!acc) {
-    out.innerHTML = '<p style="color:var(--muted)">Stopped.</p>';
-  } else {
-    out.parentElement.querySelector('.act').hidden = false;
-  }
-
-  if (acc) {
-    cur.messages.push({ role: 'assistant', content: acc });
-    const regenBtn = out.parentElement.querySelector('.regen');
-    if (regenBtn) regenBtn.dataset.index = cur.messages.length - 1;
-  }
-
-  if (handsFree && acc) feed(st, cleanText(acc), true, tok);
-
-  ctrl = null;
-  $("sendButton").disabled = false;
-  $("sendButton").textContent = "↑";
-  $("connectionStatus").textContent = "Online";
-
-  cur.updatedAt = Date.now();
-  chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-  Store.save(cur);
-  renderHistory();
-  input.focus();
+    applySettings();
 }
 
-/* Settings and User Management */
-async function loadName() {
-  prefs = Object.assign({ personality: 'default', length: 'balanced', about: '' }, LS.get('lz_prefs_' + user.id, {}));
-  if (user.guest) return LS.get('lz_guest_name', '');
-  if (!useSB) return LS.get('lz_name_' + user.id, '');
-  try {
-    const r = await sb('/rest/v1/profiles?select=display_name,settings&user_id=eq.' + user.id);
-    const j = r.ok ? await r.json() : [];
-    if (j[0] && j[0].settings && Object.keys(j[0].settings).length) prefs = Object.assign(prefs, j[0].settings);
-    return (j[0] && j[0].display_name) || '';
-  } catch { return ''; }
-}
-
-async function savePrefs() {
-  LS.set('lz_prefs_' + user.id, prefs);
-  if (user.guest || !useSB) return true;
-  try {
-    const r = await sb('/rest/v1/profiles?on_conflict=user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ user_id: user.id, settings: prefs, updated_at: new Date().toISOString() }) });
-    return r.ok;
-  } catch { return false; }
-}
-
-function markPrefs() {
-  document.querySelectorAll('#pers button').forEach(b => b.classList.toggle('on', b.dataset.p === prefs.personality));
-  document.querySelectorAll('#lens button').forEach(b => b.classList.toggle('on', b.dataset.l === prefs.length));
-}
-
-function refreshWho() {
-  const n = prefName || (user.guest ? 'Guest' : (user.email ? user.email.split('@')[0] : 'User'));
-  $("who").textContent = n;
-  $("av").textContent = n[0].toUpperCase();
-}
-
-async function persistName(v) {
-  if (user.guest || !useSB) {
-    if (v && reserved(v)) throw new Error('That name is reserved.');
-    LS.set(user.guest ? 'lz_guest_name' : 'lz_name_' + user.id, v);
-    return;
-  }
-  const r = await sb('/rest/v1/profiles?on_conflict=user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ user_id: user.id, display_name: v || null, updated_at: new Date().toISOString() }) });
-  if (r.status === 409) throw new Error('That name is already taken.');
-  if (!r.ok) throw new Error('Could not save. Try again.');
-}
-
-const mq = matchMedia('(prefers-color-scheme: light)');
-function markTheme() {
-  const m = LS.get('lz_theme', 'dark');
-  document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.t === m));
-  $("themeQuickButton").textContent = (m === 'light' || (m === 'system' && mq.matches)) ? '☾' : '☼';
-}
-
-function applyTheme(m) {
-  LS.set('lz_theme', m);
-  const light = m === 'light' || (m === 'system' && mq.matches);
-  document.body.classList.toggle('light', light);
-  markTheme();
-}
-
-mq.addEventListener('change', () => {
-  if (LS.get('lz_theme', 'dark') === 'system') applyTheme('system');
-});
-
-function openSettings() {
-  const d = defName(user);
-  $("dn").value = prefName;
-  $("dn").placeholder = d && !reserved(d) ? d : 'Your name';
-  $("dmsg").textContent = '';
-  $("dmsg").className = '';
-  $("amsg").textContent = '';
-  $("about").value = prefs.about || '';
-  markPrefs();
-  markTheme();
-  $("set").hidden = false;
-  $("dn").focus();
+function toggleTheme() {
+    $("themeSelect").value =
+        $("themeSelect").value === "dark" ? "light" : "dark";
+    saveSettings();
 }
 
 function isMobile() {
-  return window.matchMedia("(max-width: 760px)").matches;
+    return window.matchMedia("(max-width: 760px)").matches;
 }
 
 function toggleSidebar() {
-  const sidebar = $("sidebar");
-  if (isMobile()) {
-    sidebar.classList.toggle("expanded");
-    sidebar.classList.toggle("open");
-    $("mobileOverlay").classList.toggle("show", sidebar.classList.contains("open"));
-  } else {
-    sidebar.classList.toggle("collapsed");
-  }
+    const sidebar = $("sidebar");
+
+    if (isMobile()) {
+        sidebar.classList.toggle("expanded");
+        $("mobileOverlay").classList.toggle(
+            "show",
+            sidebar.classList.contains("expanded")
+        );
+    } else {
+        sidebar.classList.toggle("collapsed");
+    }
 }
 
 function closeMobileSidebar() {
-  if (!isMobile()) return;
-  $("sidebar").classList.remove("expanded", "open");
-  $("mobileOverlay").classList.remove("show");
+    if (!isMobile()) return;
+    $("sidebar").classList.remove("expanded");
+    $("mobileOverlay").classList.remove("show");
 }
 
-async function enter(u) {
-  user = u;
-  $("auth").hidden = true;
-  prefName = await loadName();
-  refreshWho();
-  $("out").textContent = u.guest ? 'Sign in' : 'Sign out';
-  chats = await Store.load();
-  cur = chats[0] || null;
-  renderHistory();
-  renderMessages();
+async function checkBackend() {
+    $("connectionStatus").textContent = "Checking…";
+
+    try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+        let response;
+
+        try {
+            response = await fetch(API_BASE + "/api/health", {
+                signal: controller.signal
+            });
+        } finally {
+            clearTimeout(timeoutId);
+        }
+
+        if (!response.ok) throw new Error("Health check failed");
+
+        const data = await response.json();
+
+        $("connectionStatus").textContent =
+            data.status === "ok" ? "Backend online" : "Backend issue";
+    } catch (error) {
+        console.error("Backend health check failed:", error);
+        $("connectionStatus").textContent = "Backend unavailable";
+    }
 }
 
-/* Event Listeners Setup */
+/* BUTTONS */
 $("sidebarToggle").addEventListener("click", toggleSidebar);
-$("menuToggle").addEventListener("click", toggleSidebar);
 $("mobileOverlay").addEventListener("click", closeMobileSidebar);
 $("newChatButton").addEventListener("click", newChat);
-$("settingsNavButton").addEventListener("click", openSettings);
-$("gear").addEventListener("click", openSettings);
-$("sx").addEventListener("click", () => $("set").hidden = true);
-$("set").addEventListener("click", e => { if (e.target === $("set")) $("set").hidden = true; });
+$("settingsButton").addEventListener("click", showSettings);
 
-$("themeQuickButton").addEventListener("click", () => {
-  const current = LS.get('lz_theme', 'dark');
-  applyTheme(current === 'dark' ? 'light' : 'dark');
+$("backToChat").addEventListener("click", () => {
+    showChat();
+    renderMessages();
 });
 
-$("out").addEventListener("click", async () => {
-  if (ctrl) ctrl.abort();
-  if (user.guest) { $("auth").hidden = false; return; }
-  Auth.out();
-  await enter(GUEST);
+$("themeSelect").addEventListener("change", saveSettings);
+$("textSizeSelect").addEventListener("change", saveSettings);
+$("themeQuickButton").addEventListener("click", toggleTheme);
+$("clearHistoryButton").addEventListener("click", clearHistory);
+$("settingsClearHistory").addEventListener("click", clearHistory);
+$("sendButton").addEventListener("click", sendMessage);
+
+/* Enter sends. Shift + Enter adds a newline. */
+$("messageInput").addEventListener("keydown", event => {
+    if (
+        event.key === "Enter" &&
+        !event.shiftKey &&
+        !event.isComposing
+    ) {
+        event.preventDefault();
+        sendMessage();
+    }
 });
 
-$("gs").addEventListener("click", () => $("auth").hidden = true);
-
-$("af").onsubmit = async e => {
-  e.preventDefault();
-  $("err").textContent = '';
-  $("ab").disabled = true;
-  try {
-    const un = $("un").value.trim();
-    if (signup && (un.length < 2 || un.length > 30)) throw new Error('Pick a username between 2 and 30 characters.');
-    await enter(await Auth.login($("em").value.trim().toLowerCase(), $("pw").value, signup, un));
-    $("pw").value = '';
-  } catch (x) {
-    $("err").textContent = x.message;
-  }
-  $("ab").disabled = false;
-};
-
-$("sw").onclick = () => {
-  signup = !signup;
-  $("err").textContent = '';
-  $("un").hidden = !signup;
-  $("un").required = signup;
-  $("ab").textContent = signup ? 'Create account' : 'Sign in';
-  $("sw").textContent = signup ? 'Have an account? Sign in' : 'New here? Create an account';
-  $("at").textContent = signup ? 'Create an account to save your chats' : 'Sign in to pick up where you left off';
-  $("pw").autocomplete = signup ? 'new-password' : 'current-password';
-};
-
-$("seg").addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (b) applyTheme(b.dataset.t);
+/* Automatically resize the message box. */
+$("messageInput").addEventListener("input", () => {
+    const input = $("messageInput");
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 180) + "px";
 });
 
-$("pers").addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  prefs.personality = b.dataset.p;
-  markPrefs();
-  savePrefs();
-});
+/* Restore saved preferences and conversations. */
+applySettings();
 
-$("lens").addEventListener('click', e => {
-  const b = e.target.closest('button');
-  if (!b) return;
-  prefs.length = b.dataset.l;
-  markPrefs();
-  savePrefs();
-});
+const savedChats = safeLoad(CHAT_KEY, []);
+chats = Array.isArray(savedChats)
+    ? savedChats.filter(chat =>
+        chat &&
+        typeof chat.id === "string" &&
+        Array.isArray(chat.messages)
+    )
+    : [];
 
-$("asave").onclick = async () => {
-  prefs.about = $("about").value.trim().slice(0, 500);
-  const ok = await savePrefs(), m = $("amsg");
-  m.className = ok ? '' : 'bad';
-  m.textContent = ok ? 'Saved.' : 'Saved locally. Could not sync.';
-};
+chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+currentChatId = chats[0]?.id || null;
 
-$("dsave").onclick = async () => {
-  const v = $("dn").value.trim().slice(0, 30), m = $("dmsg");
-  m.className = '';
-  m.textContent = '';
-  try {
-    await persistName(v);
-    prefName = v;
-    refreshWho();
-    if (!cur || !cur.messages.length) renderMessages();
-    m.textContent = v ? `Saved. Lazarus will call you ${v}.` : 'Cleared to default name.';
-  } catch (e) {
-    m.className = 'bad';
-    m.textContent = e.message;
-  }
-};
+renderHistory();
 
-$("att").onclick = () => $("file").click();
-$("file").onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
-$("messageInput").addEventListener('paste', e => {
-  const fs = [...((e.clipboardData && e.clipboardData.files) || [])].filter(f => f.type.startsWith('image/'));
-  if (fs.length) { e.preventDefault(); addFiles(fs); }
-});
+if (!currentChatId) {
+    newChat();
+} else {
+    showChat();
+    renderMessages();
+}
 
-document.addEventListener('dragover', e => e.preventDefault());
-document.addEventListener('drop', e => {
-  e.preventDefault();
-  const fs = [...((e.dataTransfer && e.dataTransfer.files) || [])];
-  if (fs.length) addFiles(fs);
-});
-
-$("mic").onclick = () => { if (listening) stopListen(); else startListen(); };
-$("spstop").onclick = stopSpeak;
-
-$("messages").addEventListener('click', e => {
-  const b = e.target.closest('.ab');
-  if (!b) return;
-  const t = b.closest('.message-content').querySelector('.t');
-  if (b.classList.contains('copy')) copyText(t._raw || t.innerText, b);
-  else if (b.classList.contains('regen')) sendMessage(Number(b.dataset.index));
-  else speakMsg(t, b);
-});
-
-$("sendButton").addEventListener('click', () => sendMessage());
-
-$("messageInput").addEventListener('keydown', event => {
-  if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
-    event.preventDefault();
-    sendMessage();
-  }
-});
-
-$("messageInput").addEventListener('input', () => {
-  if (pending > 0) stopSpeak();
-  const input = $("messageInput");
-  input.style.height = "auto";
-  input.style.height = Math.min(input.scrollHeight, 180) + "px";
-});
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    stopSpeak();
-    if (listening) stopListen(true);
-    $("set").hidden = true;
-  }
-});
-
-/* Initialize Application */
-applyTheme(LS.get('lz_theme', 'dark'));
-Auth.restore().then(u => enter(u || GUEST)).catch(() => enter(GUEST));
+checkBackend();
 </script>
 </body>
 </html>
