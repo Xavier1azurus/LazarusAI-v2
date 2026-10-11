@@ -798,6 +798,7 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
 </div>
 
 
+
 <div class="app">
     <aside id="sidebar" class="sidebar">
         <button class="brand" id="sidebarToggle" title="Expand or collapse sidebar" aria-label="Toggle sidebar">
@@ -814,6 +815,28 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
             <span class="nav-icon">📚</span>
             <span class="nav-label">Study Mode</span>
         </button>
+
+        <div class="history-heading">Recent chats</div>
+        <div id="historyList" class="history-list"></div>
+
+        <div class="sidebar-footer">
+            <div class="user-info">
+                <div id="av" class="avatar">G</div>
+                <div class="user-details">
+                    <span id="who">Guest</span>
+                </div>
+            </div>
+
+            <button class="new-chat-btn" id="gear" title="Settings">
+                <span class="nav-icon">⚙</span>
+                <span class="nav-label">Settings</span>
+            </button>
+
+            <button class="new-chat-btn" id="out" title="Sign out">
+                <span class="nav-icon">⇥</span>
+                <span class="nav-label">Sign out</span>
+            </button>
+        </div>
     </aside>
 
     <main class="main">
@@ -827,7 +850,7 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
             <div id="messages" class="messages"></div>
         </section>
 
-        <!-- STUDY MODE: OUTSIDE THE COMPOSER -->
+        <!-- STUDY MODE -->
         <section id="studyView" hidden>
             <div class="study-inner">
                 <header class="study-heading">
@@ -874,6 +897,51 @@ body[data-theme=light] .topbar { background: #f8f7fccc; }
                 </div>
             </div>
         </section>
+
+        <!-- CHAT COMPOSER -->
+        <footer id="composerWrap" class="composer-wrap">
+            <div id="thumbs" hidden></div>
+
+            <div id="spkbar" hidden>
+                <button id="spstop">■ Stop speaking</button>
+            </div>
+
+            <div class="composer">
+                <button class="ib" id="att" title="Attach images" aria-label="Attach images">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="3" width="18" height="18" rx="3"></rect>
+                        <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                        <path d="m21 15-5-5L5 21"></path>
+                    </svg>
+                </button>
+
+                <input type="file" id="file" accept="image/*" multiple hidden>
+
+                <textarea
+                    id="messageInput"
+                    rows="1"
+                    maxlength="12000"
+                    placeholder="Message Lazarus..."
+                    aria-label="Message Lazarus"
+                ></textarea>
+
+                <button class="ib" id="voiceOpen" title="Open Voice Mode" aria-label="Open Voice Mode">✦</button>
+
+                <button class="ib" id="mic" title="Dictate message" aria-label="Dictate message">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="9" y="2" width="6" height="12" rx="3"></rect>
+                        <path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"></path>
+                    </svg>
+                </button>
+
+                <button class="send-button" id="sendButton" aria-label="Send">↑</button>
+            </div>
+
+            <p class="small-note">Lazarus can make mistakes. Check important information.</p>
+        </footer>
+    </main>
+</div>
+
 
         <!-- MESSAGE COMPOSER: STAYS AT THE BOTTOM -->
         <footer id="composerWrap" class="composer-wrap">
