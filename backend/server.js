@@ -1,14 +1,23 @@
 
 import express from "express";
 import cors from "cors";
+import { createClient } from "@supabase/supabase-js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_PUBLISHABLE_KEY;
+const groqApiKey = process.env.GROQ_API_KEY;
+
+const supabase =
+  supabaseUrl && supabaseKey
+    ? createClient(supabaseUrl, supabaseKey)
+    : null;
+
 app.use(cors());
 app.use(express.json({ limit: "10mb" }));
 
-// Check whether the server is running
 app.get("/", (req, res) => {
   res.json({
     name: "Lazarus AI Backend",
@@ -17,25 +26,70 @@ app.get("/", (req, res) => {
 });
 
 app.get("/api/health", (req, res) => {
-  res.json({ status: "ok" });
+  res.json({
+    status: "ok",
+    supabaseConfigured: Boolean(supabase),
+    groqConfigured: Boolean(groqApiKey)
+  });
 });
 
-// Send a message to Groq
-app.post("/api/chat", async (req, res) => {
+// Verify the signed-in user's Supabase access token.
+async function requireUser(req, res, next) {
+  if (!supabase) {
+    return res.status(500).json({
+      error: "Supabase is not configured on the server."
+    });
+  }
+
+  const authorization = req.headers.authorization || "";
+  const token = authorization.startsWith("Bearer ")
+    ? authorization.slice(7)
+    : "";
+
+  if (!token) {
+    return res.status(401).json({
+      error: "Please sign in to use Lazarus."
+    });
+  }
+
   try {
+    const { data, error } = await supabase.auth.getUser(token);
+
+    if (error || !data?.user) {
+      return res.status(401).json({
+        error: "Your session is invalid or expired. Please sign in again."
+      });
+    }
+
+    req.user = data.user;
+    next();
+  } catch (error) {
+    console.error("Authentication error:", error.message);
+    return res.status(401).json({
+      error: "Could not verify your session."
+    });
+  }
+}
+
+app.post("/api/chat", requireUser, async (req, res) => {
+  try {
+    if (!groqApiKey) {
+      return res.status(500).json({
+        error: "The server's Groq API key is not configured."
+      });
+    }
+
     const { message, history = [] } = req.body;
 
-    if (!message || typeof message !== "string") {
+    if (typeof message !== "string" || !message.trim()) {
       return res.status(400).json({
         error: "Please provide a message."
       });
     }
 
-    const apiKey = process.env.GROQ_API_KEY;
-
-    if (!apiKey) {
-      return res.status(500).json({
-        error: "The server's Groq API key is not configured yet."
+    if (!Array.isArray(history)) {
+      return res.status(400).json({
+        error: "Chat history must be a list."
       });
     }
 
@@ -48,13 +102,14 @@ app.post("/api/chat", async (req, res) => {
       ...history
         .filter(
           (item) =>
+            item &&
             ["user", "assistant"].includes(item.role) &&
             typeof item.content === "string"
         )
         .slice(-20),
       {
         role: "user",
-        content: message
+        content: message.trim()
       }
     ];
 
@@ -63,7 +118,7 @@ app.post("/api/chat", async (req, res) => {
       {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${apiKey}`,
+          Authorization: `Bearer ${groqApiKey}`,
           "Content-Type": "application/json"
         },
         body: JSON.stringify({
@@ -92,10 +147,10 @@ app.post("/api/chat", async (req, res) => {
       });
     }
 
-    res.json({ reply });
+    return res.json({ reply });
   } catch (error) {
     console.error("Chat error:", error);
-    res.status(500).json({
+    return res.status(500).json({
       error: "Something went wrong while processing your message."
     });
   }
