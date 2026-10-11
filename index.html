@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#0c0b12">
 <title>Lazarus AI</title>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,wght@0,500;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/styles/github-dark.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.10.0/highlight.min.js"></script>
 
 <style>
 :root {
@@ -23,23 +25,12 @@
     --input: #15121f;
     --font-size: 16px;
     --shadow: 0 10px 45px #0005;
+    --err: #ff8a8a;
+    --code: #090909;
+    --on-accent: #111;
+    --user-bg: #232323;
 }
-* { box-sizing: border-box; }
-
-html, body {
-    margin: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-}
-
-body {
-    background: var(--bg);
-    color: var(--text);
-    font: var(--font-size)/1.6 system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-}
-
-body.light {
+:root[data-theme=light] {
     color-scheme: light;
     --bg: #f8f7fc;
     --sidebar: #f0edf7;
@@ -53,14 +44,36 @@ body.light {
     --bubble: #eee8f8;
     --input: #fff;
     --shadow: 0 10px 35px #47335b12;
+    --err: #c0392b;
+    --code: #e4e4e4;
+    --on-accent: #f5f5f5;
+    --user-bg: #dedede;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+
+html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
 }
 
-button, textarea, select { font: inherit; }
+body {
+    background: var(--bg);
+    color: var(--text);
+    font: var(--font-size)/1.6 Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+button, textarea, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
 button:focus-visible, textarea:focus-visible, select:focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 3px;
 }
+
+.logo{font-family:Newsreader,Georgia,serif;font-size:24px;letter-spacing:.01em}
+.logo i{color:var(--accent)}
 
 .app { display: flex; height: 100dvh; width: 100%; }
 
@@ -68,8 +81,8 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
 .sidebar {
     position: relative;
     z-index: 10;
-    width: 265px;
-    min-width: 265px;
+    width: 268px;
+    min-width: 268px;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -77,7 +90,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     overflow: hidden;
     background: var(--sidebar);
     border-right: 1px solid var(--border);
-    transition: width .22s ease, min-width .22s ease;
+    transition: width .22s ease, min-width .22s ease, transform .2s;
 }
 
 .sidebar.collapsed {
@@ -92,7 +105,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     width: 100%;
     min-height: 48px;
     padding: 5px;
-    margin-bottom: 22px;
+    margin-bottom: 12px;
     border: 0;
     border-radius: 12px;
     color: var(--text);
@@ -116,48 +129,38 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     box-shadow: 0 0 24px #9b6cff36;
 }
 
-.brand-name { font-size: 15px; font-weight: 800; letter-spacing: .06em; }
 .sidebar.collapsed .brand-name,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .history-heading,
 .sidebar.collapsed .history-list,
-.sidebar.collapsed .sidebar-footer-label { display: none; }
+.sidebar.collapsed .sidebar-footer-label,
+.sidebar.collapsed .me small,
+.sidebar.collapsed .me button#out { display: none; }
 
 .sidebar.collapsed .brand { justify-content: center; }
 .sidebar.collapsed .nav-button { justify-content: center; padding: 10px 0; }
+.sidebar.collapsed .me { justify-content: center; }
 
-.nav { display: grid; gap: 5px; }
-
-.nav-button {
-    width: 100%;
-    min-height: 44px;
+.new-chat-btn {
+    border: 1px solid var(--border);
+    background: transparent;
+    border-radius: 11px;
+    padding: 10px 12px;
+    text-align: left;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 12px;
-    border: 0;
-    border-radius: 11px;
-    background: transparent;
+    width: 100%;
+    margin-bottom: 10px;
     color: var(--text);
-    text-align: left;
-    white-space: nowrap;
 }
-
-.nav-button:hover, .nav-button.active { background: var(--panel-hover); }
-
-.nav-icon {
-    width: 24px;
-    min-width: 24px;
-    display: grid;
-    place-items: center;
-    font-size: 19px;
-}
-
-.nav-label { overflow: hidden; text-overflow: ellipsis; }
+.new-chat-btn:hover { background: var(--panel-hover); }
+.sidebar.collapsed .new-chat-btn { justify-content: center; padding: 10px 0; }
+.sidebar.collapsed .new-chat-btn span:not(.nav-icon) { display: none; }
 
 .history-heading {
     padding: 0 11px;
-    margin: 27px 0 9px;
+    margin: 15px 0 9px;
     color: var(--muted);
     font-size: 11px;
     font-weight: 700;
@@ -165,7 +168,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     letter-spacing: .12em;
 }
 
-.history-list { flex: 1; min-height: 0; overflow-y: auto; }
+.history-list { flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
 
 .history-item { display: flex; align-items: center; gap: 3px; margin: 3px 0; }
 
@@ -176,7 +179,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     border: 0;
     border-radius: 9px;
     background: transparent;
-    color: var(--text);
+    color: var(--muted);
     text-align: left;
     white-space: nowrap;
     overflow: hidden;
@@ -184,7 +187,7 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     font-size: 13px;
 }
 
-.history-open:hover, .history-open.selected { background: var(--panel-hover); }
+.history-open:hover, .history-open.selected { background: var(--panel-hover); color: var(--text); }
 
 .history-delete {
     border: 0;
@@ -192,7 +195,9 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     background: transparent;
     color: var(--muted);
     padding: 5px 8px;
+    opacity: 0;
 }
+.history-item:hover .history-delete { opacity: 1; }
 .history-delete:hover { color: #ff7777; background: var(--panel-hover); }
 
 .empty-history { padding: 10px; color: var(--muted); font-size: 13px; }
@@ -200,7 +205,27 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
 .sidebar-footer {
     padding-top: 10px;
     border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
+.av {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: var(--on-accent);
+    display: grid;
+    place-items: center;
+    font-weight: 600;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+.me-info { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+.me-info small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--muted); font-size: 12px; }
+.me-actions { display: flex; gap: 4px; }
+.me-actions button { background: none; border: 0; color: var(--muted); padding: 4px; border-radius: 6px; }
+.me-actions button:hover { background: var(--panel-hover); color: var(--text); }
 
 /* MAIN AREA + PURPLE HAZE */
 .main {
@@ -236,34 +261,17 @@ button:focus-visible, textarea:focus-visible, select:focus-visible {
     z-index: 1;
     height: 62px;
     flex: 0 0 62px;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 0 22px;
+    padding: 0 16px;
     border-bottom: 1px solid var(--border);
     background: #0c0b1280;
     backdrop-filter: blur(16px);
 }
-
-body.light .topbar { background: #f8f7fccc; }
-
-.topbar-left, .topbar-actions { display: flex; align-items: center; gap: 10px; }
-.topbar-title { font-weight: 650; font-size: 15px; }
-.status { color: var(--muted); font-size: 12px; }
-
-.icon-button {
-    width: 39px;
-    height: 39px;
-    display: grid;
-    place-items: center;
-    flex: 0 0 auto;
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    color: var(--text);
-    background: var(--panel);
-}
-.icon-button:hover { background: var(--panel-hover); }
+body[data-theme=light] .topbar { background: #f8f7fccc; }
+.topbar button { background: none; border: 0; font-size: 20px; }
 
 .chat-area {
     position: relative;
@@ -273,10 +281,10 @@ body.light .topbar { background: #f8f7fccc; }
     overflow-y: auto;
     overscroll-behavior: contain;
     scroll-behavior: smooth;
-    padding: 32px 22px 24px;
+    padding: 32px 16px 24px;
 }
 
-.messages { width: min(790px, 100%); margin: 0 auto; }
+.messages { width: min(740px, 100%); margin: 0 auto; }
 
 .welcome {
     min-height: 46vh;
@@ -307,15 +315,20 @@ body.light .topbar { background: #f8f7fccc; }
     line-height: 1.2;
     font-weight: 750;
     letter-spacing: -.04em;
+    font-family: Newsreader, serif;
 }
 
 .welcome p { margin: 0; color: var(--muted); font-size: 15px; }
+
+.sug { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; margin-top: 18px; }
+.sug button { background: var(--panel); border: 1px solid var(--border); border-radius: 999px; padding: 7px 14px; color: var(--muted); font-size: 13px; }
+.sug button:hover { color: var(--text); border-color: var(--accent); }
 
 .message {
     display: flex;
     gap: 13px;
     align-items: flex-start;
-    margin-bottom: 27px;
+    margin-bottom: 22px;
     animation: appear .18s ease-out;
 }
 
@@ -324,56 +337,29 @@ body.light .topbar { background: #f8f7fccc; }
     to { opacity: 1; transform: translateY(0); }
 }
 
-.avatar {
-    width: 33px;
-    height: 33px;
-    flex: 0 0 33px;
-    display: grid;
-    place-items: center;
-    border-radius: 11px;
-    background: var(--panel-hover);
-    font-size: 16px;
-    font-weight: 700;
-}
-
-.message.assistant .avatar {
-    color: white;
-    background: linear-gradient(145deg, #a78bfa, #6d28d9);
-}
-
-.message.user .avatar { display: none; }
-
-.message-content {
-    min-width: 0;
-    max-width: 100%;
-    overflow-wrap: anywhere;
-    white-space: pre-wrap;
-    padding: 4px 0;
-    line-height: 1.75;
-}
-
 .message.user { justify-content: flex-end; }
-
 .message.user .message-content {
-    max-width: min(80%, 610px);
-    padding: 12px 16px;
-    border: 1px solid #a78bfa1f;
-    border-radius: 19px 19px 5px 19px;
-    background: var(--bubble);
+    max-width: min(85%, 610px);
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: var(--user-bg);
+    white-space: pre-wrap;
+    word-break: break-word;
 }
 
-.message-content img {
-    display: block;
-    max-width: min(100%, 330px);
-    max-height: 280px;
-    object-fit: contain;
-    margin-top: 10px;
-    border-radius: 12px;
-}
+.message.ai .message-content { flex: 1; min-width: 0; line-height: 1.75; }
+.message-content p { margin: 0 0 .8em; }
+.message-content pre { background: var(--code); border: 1px solid var(--border); border-radius: 10px; padding: 12px; overflow-x: auto; font-size: 13px; }
+.message-content pre code { background: transparent; padding: 0; font-size: inherit; }
+.message-content pre code.hljs { background: transparent; }
+.message-content code { font-family: ui-monospace, Menlo, monospace; font-size: .92em; }
+.message-content :not(pre)>code { background: var(--code); padding: 1px 5px; border-radius: 5px; }
+.message-content ul, .message-content ol { padding-left: 22px; margin: 0 0 .8em; }
+.message-content h3, .message-content h2, .message-content h1 { font-family: Newsreader, serif; font-weight: 500; margin: .8em 0 .4em; }
 
-.thinking { color: var(--muted); }
+.error-note { color: var(--err); font-size: 13px; border-left: 2px solid var(--err); padding-left: 10px; margin-top: 8px; }
 
-.thinking::after {
+.dots::after {
     content: "";
     display: inline-block;
     width: 5px;
@@ -384,267 +370,239 @@ body.light .topbar { background: #f8f7fccc; }
     box-shadow: 9px 0 var(--accent), 18px 0 var(--accent);
     animation: pulse 1s infinite alternate;
 }
-
 @keyframes pulse { from { opacity: .25; } to { opacity: 1; } }
+
+.act { display: flex; gap: 4px; margin-top: 6px; }
+.ab { display: flex; align-items: center; gap: 6px; background: none; border: 0; color: var(--muted); padding: 5px 8px; border-radius: 8px; font-size: 13px; }
+.ab:hover { background: var(--panel-hover); color: var(--text); }
+.ab.on { color: var(--text); background: var(--panel-hover); }
+
+/* THUMBS & IMAGES */
+#thumbs { max-width: 740px; margin: 0 auto 8px; display: flex; gap: 10px; flex-wrap: wrap; padding: 0 16px; }
+.th { position: relative; width: 60px; height: 60px; }
+.th img { width: 100%; height: 100%; object-fit: cover; border-radius: 10px; border: 1px solid var(--border); }
+.th button { position: absolute; top: -6px; right: -6px; width: 20px; height: 20px; border-radius: 50%; border: 0; background: var(--accent); color: var(--on-accent); font-size: 11px; line-height: 20px; padding: 0; }
+.imgs { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 6px; }
+.imgs img { max-width: 220px; max-height: 220px; border-radius: 10px; object-fit: cover; display: block; }
+
+#spkbar { max-width: 740px; margin: 0 auto 8px; text-align: center; }
+#spkbar button { background: var(--panel); border: 1px solid var(--accent); color: var(--text); border-radius: 999px; padding: 6px 16px; }
 
 /* MESSAGE COMPOSER */
 .composer-wrap {
     position: relative;
     z-index: 1;
-    padding: 12px 22px max(17px, env(safe-area-inset-bottom));
+    padding: 0 16px calc(14px + env(safe-area-inset-bottom, 0));
     background: linear-gradient(transparent, var(--bg) 20%);
 }
 
 .composer {
-    width: min(790px, 100%);
+    width: min(740px, 100%);
     margin: 0 auto;
-    padding: 10px 12px 10px 16px;
-    border: 1px solid #8b5cf641;
-    border-radius: 24px;
-    background: var(--input);
-    box-shadow: 0 0 35px #8b5cf60a, var(--shadow);
+    padding: 8px;
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
     transition: border-color .2s, box-shadow .2s;
 }
 
 .composer:focus-within {
-    border-color: #a78bfa8a;
-    box-shadow: 0 0 35px #8b5cf61c, var(--shadow);
+    border-color: var(--accent);
 }
 
 #messageInput {
-    display: block;
-    width: 100%;
-    min-height: 43px;
-    max-height: 180px;
-    resize: none;
-    overflow-y: auto;
+    flex: 1;
+    background: none;
     border: 0;
     outline: 0;
-    padding: 9px 2px;
+    padding: 6px 4px;
     color: var(--text);
-    background: transparent;
+    resize: none;
+    max-height: 180px;
     line-height: 1.55;
 }
 
 #messageInput::placeholder { color: var(--muted); }
 
-.composer-bottom {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
+.ib {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
 }
-
-.composer-tools { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.ib:hover { color: var(--text); }
+.ib.on { color: var(--on-accent); background: var(--accent); }
+#mic.on { animation: p 1s infinite; }
 
 .send-button {
-    min-width: 43px;
-    height: 41px;
-    padding: 0 15px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
     border: 0;
-    border-radius: 14px;
-    color: white;
-    background: linear-gradient(135deg, #a78bfa, #7c3aed);
-    font-weight: 750;
+    color: var(--on-accent);
+    background: var(--accent);
+    font-size: 16px;
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
     transition: filter .2s, transform .2s;
 }
-
 .send-button:hover:not(:disabled) { filter: brightness(1.12); transform: translateY(-1px); }
-.send-button:disabled { opacity: .55; cursor: wait; }
+.send-button:disabled { opacity: .35; cursor: default; }
 
 .small-note {
-    margin: 9px 0 0;
+    margin: 8px 0 0;
     color: var(--muted);
     text-align: center;
-    font-size: 11px;
+    font-size: 12px;
 }
 
-/* SETTINGS */
-.panel-view { flex: 1; min-height: 0; overflow-y: auto; padding: 30px 22px; }
-.settings-content { width: min(620px, 100%); margin: 0 auto; }
-.settings-content h1 { font-size: 28px; letter-spacing: -.03em; }
-.settings-intro { color: var(--muted); }
+/* AUTH MODAL */
+#auth { position: fixed; inset: 0; background: var(--bg); display: grid; place-items: center; z-index: 99; padding: 20px; }
+#auth form { width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; }
+#auth .logo { font-size: 40px; text-align: center; }
+#auth p.s { text-align: center; color: var(--muted); margin: -6px 0 8px; font-size: 14px; }
+#auth input { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 11px 13px; color: var(--text); font: inherit; }
+#auth input:focus { border-color: var(--accent); outline: none; }
+#auth .go { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 10px; padding: 11px; font-weight: 600; }
+#auth .alt { background: none; border: 0; color: var(--muted); font-size: 13px; }
+#err { color: var(--err); min-height: 20px; font-size: 13px; text-align: center; }
 
-.setting-card {
-    padding: 20px;
-    margin: 16px 0;
-    border: 1px solid var(--border);
-    border-radius: 17px;
-    background: var(--panel);
-}
-.setting-card h3 { margin: 0 0 5px; font-size: 16px; }
-.setting-card p { margin: 0 0 16px; color: var(--muted); font-size: 13px; }
-
-.setting-row { display: flex; align-items: center; justify-content: space-between; gap: 15px; }
-
-select, .secondary-button {
-    padding: 10px 12px;
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    color: var(--text);
-    background: var(--panel-hover);
-}
-.secondary-button:hover { filter: brightness(1.1); }
-
-.hidden { display: none !important; }
-
-.mobile-overlay { display: none; }
+/* SETTINGS MODAL */
+#set { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: grid; place-items: center; z-index: 12; padding: 20px; backdrop-filter: blur(2px); }
+#set .card { background: var(--panel); border: 1px solid var(--border); border-radius: 16px; padding: 20px; width: 100%; max-width: 420px; max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+#set .row { display: flex; justify-content: space-between; align-items: center; }
+#set h2 { margin: 0; font: 500 22px Newsreader, Georgia, serif; }
+#set .row button { background: none; border: 0; color: var(--muted); font-size: 16px; }
+#set label { color: var(--muted); font-size: 13px; margin-top: 6px; }
+.seg { display: flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.seg button { flex: 1; background: none; border: 0; padding: 8px; color: var(--muted); font-size: 13px; }
+.seg button:hover { color: var(--text); }
+.seg button.on { background: var(--accent); color: var(--on-accent); }
+.nrow { display: flex; gap: 8px; }
+#dn { flex: 1; min-width: 0; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; color: var(--text); font: inherit; }
+#dn:focus { border-color: var(--accent); outline: none; }
+#dsave { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 10px; padding: 0 16px; font-weight: 600; }
+#dmsg { min-height: 20px; font-size: 13px; color: var(--muted); }
+#dmsg.bad { color: var(--err); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { background: none; border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; color: var(--muted); font-size: 13px; }
+.chips button:hover { color: var(--text); }
+.chips button.on { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+#about { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 9px 12px; color: var(--text); font: inherit; resize: vertical; min-height: 72px; outline: none; }
+#about:focus { border-color: var(--accent); }
+.nrow2 { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+#asave { background: var(--accent); color: var(--on-accent); border: 0; border-radius: 10px; padding: 8px 16px; font-weight: 600; }
+#amsg { font-size: 13px; color: var(--muted); }
+#amsg.bad { color: var(--err); }
 
 @media (max-width: 760px) {
     .sidebar {
         position: fixed;
-        top: 0; bottom: 0; left: 0;
-        width: 70px;
-        min-width: 70px;
-        box-shadow: var(--shadow);
+        inset: 0 auto 0 0;
+        z-index: 5;
+        transform: translateX(-100%);
+        width: 268px;
     }
-
-    .sidebar:not(.expanded) .brand-name,
-    .sidebar:not(.expanded) .nav-label,
-    .sidebar:not(.expanded) .history-heading,
-    .sidebar:not(.expanded) .history-list,
-    .sidebar:not(.expanded) .sidebar-footer-label { display: none; }
-
-    .sidebar:not(.expanded) .brand { justify-content: center; }
-    .sidebar:not(.expanded) .nav-button { justify-content: center; padding: 10px 0; }
-
-    .sidebar.expanded { width: min(280px, 84vw); min-width: min(280px, 84vw); }
-
-    .sidebar.expanded .brand-name,
-    .sidebar.expanded .nav-label,
-    .sidebar.expanded .history-heading,
-    .sidebar.expanded .history-list,
-    .sidebar.expanded .sidebar-footer-label { display: block; }
-
-    .sidebar.expanded .brand { justify-content: flex-start; }
-    .sidebar.expanded .nav-button { justify-content: flex-start; padding: 10px 12px; }
-
-    .mobile-overlay.show {
-        display: block;
-        position: fixed;
-        z-index: 8;
-        inset: 0;
-        background: #0008;
-        backdrop-filter: blur(2px);
-    }
-
-    .topbar { padding: 0 12px 0 82px; }
+    .sidebar.open { transform: none; }
+    .topbar { display: flex; }
     .chat-area { padding: 22px 13px 20px; }
-    .composer-wrap { padding: 8px 10px 12px 80px; }
-    .panel-view { padding: 22px 13px 25px 82px; }
-    .welcome { min-height: 40vh; }
-    .welcome h1 { font-size: 28px; }
-    .message { gap: 10px; }
-    .message.user .message-content { max-width: 91%; }
-    .composer { border-radius: 20px; }
-}
-
-@media (max-width: 420px) {
-    .topbar-title { font-size: 14px; }
-    #connectionStatus { max-width: 85px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .topbar-actions { gap: 6px; }
-    .icon-button { width: 36px; height: 36px; }
-    .send-button { padding: 0 12px; }
-    .small-note { font-size: 10px; }
+    .composer-wrap { padding: 8px 10px 12px; }
 }
 </style>
 </head>
 
 <body>
-<div class="app">
-    <div id="mobileOverlay" class="mobile-overlay"></div>
 
+<!-- AUTH MODAL -->
+<div id="auth" hidden>
+  <form id="af">
+    <div class="logo">Laz<i>a</i>rus</div>
+    <p class="s" id="at">Sign in to pick up where you left off</p>
+    <input id="un" type="text" placeholder="Username (what Lazarus calls you)" maxlength="30" autocomplete="username" hidden>
+    <input id="em" type="email" placeholder="Email" autocomplete="email" required>
+    <input id="pw" type="password" placeholder="Password (6+ characters)" autocomplete="current-password" minlength="6" required>
+    <div id="err"></div>
+    <button class="go" id="ab">Sign in</button>
+    <button class="alt" type="button" id="sw">New here? Create an account</button>
+    <button class="alt" type="button" id="gs">Continue as guest</button>
+  </form>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div id="set" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="st">
+    <div class="row"><h2 id="st">Settings</h2><button id="sx" aria-label="Close settings">✕</button></div>
+    <label>Theme</label>
+    <div class="seg" id="seg"><button data-t="dark">Dark</button><button data-t="light">Light</button><button data-t="system">System</button></div>
+    <label for="dn">What Lazarus calls you</label>
+    <div class="nrow"><input id="dn" maxlength="30" autocomplete="off"><button id="dsave">Save</button></div>
+    <div id="dmsg" role="status"></div>
+    <label>Personality</label>
+    <div class="chips" id="pers"><button data-p="default">Default</button><button data-p="friendly">Friendly</button><button data-p="professional">Professional</button><button data-p="witty">Witty</button><button data-p="direct">Direct</button><button data-p="nerdy">Nerdy</button></div>
+    <label>Response length</label>
+    <div class="seg" id="lens"><button data-l="short">Short</button><button data-l="balanced">Balanced</button><button data-l="detailed">Detailed</button></div>
+    <label for="about">Anything else Lazarus should know or do</label>
+    <textarea id="about" maxlength="500" placeholder="e.g. I'm learning Spanish. Explain things with examples."></textarea>
+    <div class="nrow2"><span id="amsg" role="status"></span><button id="asave">Save</button></div>
+  </div>
+</div>
+
+<div class="app">
     <aside id="sidebar" class="sidebar">
         <button class="brand" id="sidebarToggle" title="Expand or collapse sidebar" aria-label="Toggle sidebar">
             <span class="brand-icon">✦</span>
-            <span class="brand-name">LAZARUS AI</span>
+            <span class="brand-name logo">Laz<i>a</i>rus</span>
         </button>
 
-        <nav class="nav">
-            <button class="nav-button" id="newChatButton" title="New chat">
-                <span class="nav-icon">＋</span><span class="nav-label">New chat</span>
-            </button>
-            <button class="nav-button" id="settingsButton" title="Settings">
-                <span class="nav-icon">⚙</span><span class="nav-label">Settings</span>
-            </button>
-        </nav>
+        <button class="new-chat-btn" id="newChatButton" title="New chat">
+            <span class="nav-icon">＋</span><span class="nav-label">New chat</span>
+        </button>
 
         <div class="history-heading">Your chats</div>
         <div id="historyList" class="history-list"></div>
 
         <div class="sidebar-footer">
-            <button class="nav-button" id="clearHistoryButton" title="Delete all chats">
-                <span class="nav-icon">⌫</span>
-                <span class="nav-label sidebar-footer-label">Clear history</span>
-            </button>
+            <div class="av" id="av">G</div>
+            <div class="me-info">
+                <small id="who">Guest</small>
+                <div class="me-actions">
+                    <button id="gear" title="Settings" aria-label="Settings"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg></button>
+                </div>
+            </div>
+            <button class="history-delete" id="out" title="Sign out" style="opacity:1">Sign out</button>
         </div>
     </aside>
 
     <main class="main">
         <header class="topbar">
-            <div class="topbar-left">
-                <div class="topbar-title" id="topbarTitle">Lazarus AI</div>
-            </div>
-            <div class="topbar-actions">
-                <span class="status" id="connectionStatus">Checking…</span>
-                <button class="icon-button" id="themeQuickButton" title="Toggle theme" aria-label="Toggle theme">☼</button>
-            </div>
+            <button id="menu" aria-label="Open menu">☰</button>
+            <span class="logo">Laz<i>a</i>rus</span>
+            <div style="width:24px"></div>
         </header>
 
         <section id="chatView" class="chat-area">
             <div id="messages" class="messages"></div>
         </section>
 
-        <section id="settingsView" class="panel-view hidden">
-            <div class="settings-content">
-                <h1>Settings</h1>
-                <p class="settings-intro">Make Lazarus feel like yours.</p>
-
-                <div class="setting-card">
-                    <h3>Appearance</h3>
-                    <p>Choose your preferred theme.</p>
-                    <div class="setting-row">
-                        <label for="themeSelect">Theme</label>
-                        <select id="themeSelect">
-                            <option value="dark">Dark mode</option>
-                            <option value="light">Light mode</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="setting-card">
-                    <h3>Text size</h3>
-                    <p>Adjust the text size across the interface.</p>
-                    <div class="setting-row">
-                        <label for="textSizeSelect">Text size</label>
-                        <select id="textSizeSelect">
-                            <option value="small">Small</option>
-                            <option value="medium">Medium</option>
-                            <option value="large">Large</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="setting-card">
-                    <h3>Chat history</h3>
-                    <p>Saved conversations stay in this browser on this device.</p>
-                    <button class="secondary-button" id="settingsClearHistory">Delete all chats</button>
-                </div>
-
-                <button class="secondary-button" id="backToChat">← Back to chat</button>
-            </div>
-        </section>
-
         <footer id="composerWrap" class="composer-wrap">
+            <div id="thumbs" hidden></div>
+            <div id="spkbar" hidden><button id="spstop">■ Stop speaking</button></div>
             <div class="composer">
-                <textarea id="messageInput" rows="1" maxlength="12000"
-                    placeholder="Message Lazarus..." aria-label="Message Lazarus"></textarea>
-                <div class="composer-bottom">
-                    <div class="composer-tools">
-                        <span class="status" id="inputHint">Enter to send · Shift + Enter for a new line</span>
-                    </div>
-                    <button class="send-button" id="sendButton">↑</button>
-                </div>
+                <button class="ib" id="att" title="Attach photos" aria-label="Attach photos"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="9" cy="10" r="1.6"/><path d="M21 16l-5-5-8 8"/></svg></button>
+                <input type="file" id="file" accept="image/*" multiple hidden>
+                <textarea id="messageInput" rows="1" maxlength="12000" placeholder="Message Lazarus..." aria-label="Message Lazarus"></textarea>
+                <button class="ib" id="mic" title="Speak your message" aria-label="Speak your message"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+                <button class="send-button" id="sendButton" aria-label="Send">↑</button>
             </div>
             <p class="small-note">Lazarus can make mistakes. Check important information.</p>
         </footer>
@@ -654,489 +612,605 @@ select, .secondary-button {
 <script>
 "use strict";
 
-/* Keep the backend URL in exactly one place. */
-const API_BASE = "https://lazarus-backend-75ik.onrender.com";
-const CHAT_KEY = "lazarus_saved_chats_v1";
-const SETTINGS_KEY = "lazarus_preferences_v1";
+const CFG = {
+  SB_URL: 'https://gkoullazvjzzgbpvuchw.supabase.co',
+  SB_ANON: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imdrb3VsbGF6dmp6emdicHZ1Y2h3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE3MjgxMzIsImV4cCI6MjEwNzMwNDEzMn0.ovH0g9TjDKQLeln-D2Ar-Lq4RogyciIP08UuFXKwg0o',
+  MODEL: 'openai/gpt-oss-120b',
+  SYSTEM: 'You are Lazarus, a helpful, clear and honest AI assistant created by Notanaidev and Xavier. If anyone asks who made or created you, say you were created by Notanaidev and Xavier. Use Markdown when it helps.'
+};
 
 const $ = id => document.getElementById(id);
+const useSB = Boolean(CFG.SB_URL && CFG.SB_ANON);
+const GUEST = { id: 'guest', email: '', guest: true };
 
-let chats = [];
-let currentChatId = null;
-let sending = false;
+let user = null, chats = [], cur = null, ctrl = null, signup = false;
+let prefName = '';
+let prefs = { personality: 'default', length: 'balanced', about: '' };
 
-function makeId() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 9);
+const reserved = n => ['xavier', 'notanaidev'].includes(String(n).toLowerCase().replace(/[^a-z0-9]/g, ''));
+const defName = u => (u && !u.guest && u.email) ? u.email.split('@')[0] : '';
+const nameOf = u => prefName || (reserved(defName(u)) ? '' : defName(u));
+
+const PERS = {
+  default: '',
+  friendly: 'Personality: warm, friendly and encouraging, with a casual tone.',
+  professional: 'Personality: professional, polished and precise. No slang.',
+  witty: 'Personality: witty and playful with light humor, but never at the cost of being helpful.',
+  direct: 'Personality: direct and blunt. No fluff or filler. Get straight to the point.',
+  nerdy: 'Personality: curious and nerdy. Enjoy explaining how things work, with interesting details.'
+};
+
+const LENS = {
+  short: 'Keep replies short, a few sentences at most unless the user asks for more.',
+  balanced: '',
+  detailed: 'Give thorough, detailed answers with examples where useful.'
+};
+
+const sysPrompt = () => [
+  CFG.SYSTEM,
+  nameOf(user) ? "The user's name is " + nameOf(user) + '. Address them by that name naturally, but not in every message.' : '',
+  PERS[prefs.personality] || '',
+  LENS[prefs.length] || '',
+  prefs.about ? 'The user also asked you to follow these instructions: ' + prefs.about : ''
+].filter(Boolean).join(' ');
+
+const LS = {
+  get: (k, d) => { try { return JSON.parse(localStorage.getItem(k)) ?? d } catch { return d } },
+  set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true } catch { return false } }
+};
+
+const uid = () => (crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2));
+
+async function sb(path, opt = {}, retry = true) {
+  const s = LS.get('lz_session');
+  const headers = { apikey: CFG.SB_ANON, Authorization: 'Bearer ' + (s?.access_token || CFG.SB_ANON), ...(opt.headers || {}) };
+  if (opt.body != null && !Object.keys(headers).some(k => k.toLowerCase() === 'content-type')) headers['Content-Type'] = 'application/json';
+  const r = await fetch(CFG.SB_URL + path, { ...opt, headers });
+  if (r.status === 401 && retry && s?.refresh_token) {
+    const rr = await fetch(CFG.SB_URL + '/auth/v1/token?grant_type=refresh_token', { method:'POST', headers:{apikey:CFG.SB_ANON,'Content-Type':'application/json'}, body: JSON.stringify({refresh_token:s.refresh_token}) });
+    if (rr.ok) { LS.set('lz_session', await rr.json()); return sb(path, opt, false); }
+    Auth.out();
+  }
+  return r;
 }
 
-function safeLoad(key, fallback) {
-    try {
-        const raw = localStorage.getItem(key);
-        return raw ? JSON.parse(raw) : fallback;
-    } catch {
-        return fallback;
+const Auth = {
+  async login(email, pw, create, username) {
+    if (useSB) {
+      if (create && (!/^[a-zA-Z0-9_.-]{2,30}$/.test(username || '') || reserved(username))) {
+        if (!/^[a-zA-Z0-9_.-]{2,30}$/.test(username || '')) throw new Error('Username must be 2–30 characters using letters, numbers, dots, underscores, or hyphens.');
+        throw new Error('That username is reserved.');
+      }
+      if (create) {
+        const c = await sb('/rest/v1/rpc/name_available', { method:'POST', body: JSON.stringify({ n: username }) }, false);
+        if (c.ok && (await c.json()) === false) throw new Error('That username is already taken.');
+      }
+      const r = await sb(create ? '/auth/v1/signup' : '/auth/v1/token?grant_type=password', { method:'POST', body: JSON.stringify(create ? { email, password:pw, data:{ username } } : { email, password:pw }) }, false);
+      const j = await r.json();
+      const em = j.msg || j.error_description || j.message || '';
+      if (!r.ok) throw new Error(/database error/i.test(em) ? 'That username is already taken.' : (em || 'Something went wrong'));
+      if (!j.access_token) throw new Error('Check your email to confirm your account, then sign in.');
+      LS.set('lz_session', j);
+      return { id: j.user.id, email: j.user.email };
     }
-}
+    throw new Error('Authentication is not configured.');
+  },
+  async restore() {
+    const s = LS.get('lz_session'); if (!s) return null;
+    if (!useSB) return s.local ? { id: s.local, email: s.local } : null;
+    if (!s.access_token) return null;
+    const r = await sb('/auth/v1/user'); if (!r.ok) { Auth.out(); return null; }
+    const u = await r.json(); return { id: u.id, email: u.email };
+  },
+  async out() {
+    const s = LS.get('lz_session');
+    try { if (useSB && s?.access_token) await fetch(CFG.SB_URL + '/auth/v1/logout', { method:'POST', headers:{ apikey:CFG.SB_ANON, Authorization:'Bearer ' + s.access_token } }); } catch (e) {}
+    localStorage.removeItem('lz_session');
+  }
+};
 
-function saveChats() {
-    try {
-        localStorage.setItem(CHAT_KEY, JSON.stringify(chats));
-    } catch (error) {
-        console.error("Could not save chats:", error);
+const Store = {
+  async load() {
+    if (!useSB || user.guest) return LS.get('lz_chats_' + user.id, []);
+    const r = await sb('/rest/v1/chats?select=id,title,messages,updated_at&order=updated_at.desc');
+    if (!r.ok) throw new Error('Could not load chats (' + r.status + ').');
+    const data = await r.json();
+    return Array.isArray(data) ? data.filter(c => c && typeof c.id === 'string' && Array.isArray(c.messages)) : [];
+  },
+  async save(c) {
+    c.updated_at = new Date().toISOString();
+    if (!useSB || user.guest) {
+      if (!LS.set('lz_chats_' + user.id, chats)) {
+        const compact = chats.map(x => ({ ...x, messages: x.messages.map(m => { const copy = { ...m }; if (copy.images) { delete copy.images; copy.content = copy.content || '[photo attached]'; } return copy; }) }));
+        if (!LS.set('lz_chats_' + user.id, compact)) throw new Error('Browser storage is full.');
+      }
+      return true;
     }
+    const r = await sb('/rest/v1/chats', { method:'POST', headers:{Prefer:'resolution=merge-duplicates'}, body: JSON.stringify({ id:c.id, user_id:user.id, title:c.title, messages:c.messages, updated_at:c.updated_at }) });
+    if (!r.ok) throw new Error('Could not save chat (' + r.status + ').');
+    return true;
+  },
+  async del(id) {
+    if (!useSB || user.guest) { LS.set('lz_chats_' + user.id, chats); return; }
+    await sb('/rest/v1/chats?id=eq.' + encodeURIComponent(id), { method:'DELETE' });
+  }
+};
+
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+function md(src) {
+  const blocks = [];
+  let t = esc(src).replace(/```(\w*)\n?([\s\S]*?)(```|$)/g, (_, l, c) => { blocks.push('<pre><code' + (l ? ' class="language-' + l.replace(/[^a-zA-Z0-9_+-]/g,'') + '"' : '') + '>' + c.replace(/\n$/,'') + '</code></pre>'); return '\u0000' + (blocks.length-1) + '\u0000'; });
+  t = t.split(/\n{2,}/).map(p => {
+    if (/^\u0000\d+\u0000$/.test(p.trim())) return p.trim();
+    if (/^#{1,3} /.test(p)) return p.replace(/^#{1,3} (.*)$/, '<h3>$1</h3>');
+    if (/^(\s*[-*] .*(\n|$))+$/.test(p)) return '<ul>' + p.trim().split('\n').map(l => '<li>' + l.replace(/^\s*[-*] /,'') + '</li>').join('') + '</ul>';
+    if (/^(\s*\d+\. .*(\n|$))+$/.test(p)) return '<ol>' + p.trim().split('\n').map(l => '<li>' + l.replace(/^\s*\d+\. /,'') + '</li>').join('') + '</ol>';
+    return '<p>' + p.replace(/\n/g,'<br>') + '</p>';
+  }).join('');
+  t = t.replace(/`([^`\n]+)`/g,'<code>$1</code>').replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>').replace(/\*([^*\n]+)\*/g,'<em>$1</em>');
+  return t.replace(/\u0000(\d+)\u0000/g, (_, i) => blocks[i]);
 }
 
-function currentChat() {
-    return chats.find(chat => chat.id === currentChatId) || null;
+function renderMarkdown(el, source) {
+  el.innerHTML = md(source);
+  if (window.hljs) el.querySelectorAll('pre code').forEach(code => { try { window.hljs.highlightElement(code); } catch {} });
 }
 
-function makeTitle(text) {
-    const clean = String(text || "").replace(/\s+/g, " ").trim();
-    if (!clean) return "New chat";
-    return clean.length > 36 ? clean.slice(0, 36).trimEnd() + "…" : clean;
-}
+function renderList() {
+  const list = $('historyList');
+  list.replaceChildren();
+  if (!chats.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-history";
+    empty.textContent = "Your chats will appear here.";
+    list.appendChild(empty);
+    return;
+  }
+  chats.forEach(c => {
+    const row = document.createElement("div");
+    row.className = "history-item";
 
-function newChat() {
-    const chat = {
-        id: makeId(),
-        title: "New chat",
-        messages: [],
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-    };
-
-    chats.unshift(chat);
-    currentChatId = chat.id;
-    saveChats();
-    renderHistory();
-    showChat();
-    renderMessages();
-    closeMobileSidebar();
-    $("messageInput").focus();
-}
-
-function openChat(id) {
-    if (!chats.some(chat => chat.id === id)) return;
-    currentChatId = id;
-    renderHistory();
-    showChat();
-    renderMessages();
-    closeMobileSidebar();
-}
-
-function deleteChat(id) {
-    const chat = chats.find(item => item.id === id);
-    if (!chat || !confirm(`Delete "${chat.title}"?`)) return;
-
-    chats = chats.filter(item => item.id !== id);
-
-    if (currentChatId === id) {
-        currentChatId = chats[0]?.id || null;
-    }
-
-    saveChats();
-    renderHistory();
-
-    if (!currentChatId) newChat();
-    else {
-        showChat();
-        renderMessages();
-    }
-}
-
-function clearHistory() {
-    if (!chats.length) return;
-    if (!confirm("Delete all saved conversations? This cannot be undone.")) return;
-
-    chats = [];
-    currentChatId = null;
-    saveChats();
-    renderHistory();
-    newChat();
-}
-
-function renderHistory() {
-    const list = $("historyList");
-    list.replaceChildren();
-
-    if (!chats.length) {
-        const empty = document.createElement("div");
-        empty.className = "empty-history";
-        empty.textContent = "Your chats will appear here.";
-        list.appendChild(empty);
-        return;
-    }
-
-    chats.forEach(chat => {
-        const row = document.createElement("div");
-        row.className = "history-item";
-
-        const open = document.createElement("button");
-        open.className = "history-open" + (chat.id === currentChatId ? " selected" : "");
-        open.textContent = chat.title || "New chat";
-        open.title = chat.title || "New chat";
-        open.addEventListener("click", () => openChat(chat.id));
-
-        const remove = document.createElement("button");
-        remove.className = "history-delete";
-        remove.textContent = "×";
-        remove.title = "Delete chat";
-        remove.setAttribute("aria-label", "Delete " + (chat.title || "chat"));
-        remove.addEventListener("click", () => deleteChat(chat.id));
-
-        row.append(open, remove);
-        list.appendChild(row);
+    const open = document.createElement("button");
+    open.className = "history-open" + (cur && cur.id === c.id ? " selected" : "");
+    open.textContent = c.title || "New chat";
+    open.title = c.title || "New chat";
+    open.addEventListener("click", () => {
+      if (ctrl) return;
+      cur = c;
+      renderThread();
+      renderList();
+      $('sidebar').classList.remove('open');
     });
-}
 
-function showChat() {
-    $("chatView").classList.remove("hidden");
-    $("composerWrap").classList.remove("hidden");
-    $("settingsView").classList.add("hidden");
-    $("topbarTitle").textContent = currentChat()?.title || "Lazarus AI";
-}
-
-function showSettings() {
-    $("chatView").classList.add("hidden");
-    $("composerWrap").classList.add("hidden");
-    $("settingsView").classList.remove("hidden");
-    $("topbarTitle").textContent = "Settings";
-    closeMobileSidebar();
-}
-
-function renderMessages() {
-    const container = $("messages");
-    container.replaceChildren();
-
-    const chat = currentChat();
-
-    if (!chat || chat.messages.length === 0) {
-        const welcome = document.createElement("div");
-        welcome.className = "welcome";
-
-        const logo = document.createElement("div");
-        logo.className = "welcome-logo";
-        logo.textContent = "✦";
-
-        const heading = document.createElement("h1");
-        heading.textContent = "What can I help with?";
-
-        const description = document.createElement("p");
-        description.textContent = "Ask Lazarus anything.";
-
-        welcome.append(logo, heading, description);
-        container.appendChild(welcome);
-    } else {
-        chat.messages.forEach(message => {
-            const row = document.createElement("article");
-            row.className = "message " + (message.role === "user" ? "user" : "assistant");
-
-            const avatar = document.createElement("div");
-            avatar.className = "avatar";
-            avatar.textContent = message.role === "user" ? "Y" : "✦";
-
-            const content = document.createElement("div");
-            content.className = "message-content";
-
-            if (message.thinking) {
-                content.classList.add("thinking");
-            }
-
-            content.textContent = message.content || "";
-
-            row.append(avatar, content);
-            container.appendChild(row);
-        });
-    }
-
-    $("topbarTitle").textContent = chat?.title || "Lazarus AI";
-
-    requestAnimationFrame(() => {
-        $("chatView").scrollTop = $("chatView").scrollHeight;
+    const remove = document.createElement("button");
+    remove.className = "history-delete";
+    remove.textContent = "×";
+    remove.title = "Delete chat";
+    remove.addEventListener("click", async e => {
+      e.stopPropagation();
+      if (ctrl) return;
+      if (!confirm(`Delete "${c.title}"?`)) return;
+      const prior = chats;
+      chats = chats.filter(x => x.id !== c.id);
+      try {
+        await Store.del(c.id);
+        if (cur && cur.id === c.id) cur = chats[0] || null;
+        renderThread();
+        renderList();
+      } catch (err) {
+        chats = prior;
+        alert(err.message);
+        renderList();
+      }
     });
+
+    row.append(open, remove);
+    list.appendChild(row);
+  });
 }
 
-function addUserMessage(content) {
-    const chat = currentChat();
-    if (!chat) return null;
+const ICO = d => '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
+const BTNS = '<button class="ab copy" title="Copy response">' + ICO('<rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h9"/>') + '<span>Copy</span></button>'
+  + '<button class="ab regen" title="Regenerate response">' + ICO('<path d="M20 7v5h-5"/><path d="M4 17v-5h5"/><path d="M5.6 9a7 7 0 0 1 11.6-2L20 12M4 12l2.8 5a7 7 0 0 0 11.6-2"/>') + '<span>Regenerate</span></button>'
+  + '<button class="ab spk" title="Read aloud">' + ICO('<path d="M4 9v6h4l5 4V5L8 9H4z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>') + '<span>Listen</span></button>';
 
-    const message = { role: "user", content };
-    chat.messages.push(message);
-
-    if (chat.title === "New chat") {
-        chat.title = makeTitle(content);
+function bubble(role, text, images, messageIndex = -1) {
+  const m = document.createElement('div');
+  m.className = 'message ' + (role === 'user' ? 'user' : 'ai');
+  if (role === 'user') {
+    m.innerHTML = '<div class="message-content"></div>';
+    const b = m.firstChild;
+    if (images && images.length) {
+      const d = document.createElement('div');
+      d.className = 'imgs';
+      images.forEach(u => { const i = new Image(); i.src = u; i.alt = 'Attached photo'; d.appendChild(i); });
+      b.appendChild(d);
     }
-
-    chat.updatedAt = Date.now();
-    chats.sort((a, b) => b.updatedAt - a.updatedAt);
-    saveChats();
-    renderHistory();
-    return message;
+    if (text) b.appendChild(document.createTextNode(text));
+    $('messages').appendChild(m);
+    return b;
+  }
+  m.innerHTML = '<div class="message-content"><div class="t"></div><div class="act"' + (text ? '' : ' hidden') + '>' + BTNS + '</div></div>';
+  const t = m.querySelector('.t');
+  t._raw = text;
+  t._act = m.querySelector('.act');
+  const regen = m.querySelector('.regen');
+  if (regen) regen.dataset.index = messageIndex;
+  if (text) renderMarkdown(t, text); else t.innerHTML = '<span class="dots"></span>';
+  $('messages').appendChild(m);
+  return t;
 }
 
-async function sendMessage() {
-    if (sending) return;
+function renderThread() {
+  const container = $('messages');
+  container.replaceChildren();
+  if (!cur || !cur.messages.length) {
+    const welcome = document.createElement("div");
+    welcome.className = "welcome";
 
-    const input = $("messageInput");
-    const text = input.value.trim();
+    const logo = document.createElement("div");
+    logo.className = "welcome-logo";
+    logo.textContent = "✦";
 
-    if (!text) {
-        input.focus();
-        return;
-    }
+    const heading = document.createElement("h1");
+    heading.textContent = nameOf(user) ? 'Hi ' + nameOf(user) + '. What should we bring back to life today?' : 'What can I help with?';
 
-    if (!currentChat()) newChat();
+    const description = document.createElement("p");
+    description.textContent = "Ask Lazarus anything.";
 
-    const chat = currentChat();
-    if (!chat) return;
+    const sug = document.createElement("div");
+    sug.className = "sug";
+    ['Explain how a CPU works', 'Help me write a cover letter', 'Debug my JavaScript', 'Plan a weekend trip'].forEach(s => {
+      const b = document.createElement('button');
+      b.textContent = s;
+      b.onclick = () => { $('messageInput').value = s; send(); };
+      sug.appendChild(b);
+    });
 
-    input.value = "";
-    input.style.height = "auto";
+    welcome.append(logo, heading, description, sug);
+    container.appendChild(welcome);
+    return;
+  }
+  cur.messages.forEach((m, i) => bubble(m.role === 'user' ? 'user' : 'ai', m.content, m.images, i));
+  $('chatView').scrollTop =$('chatView').scrollHeight;
+}
 
-    addUserMessage(text);
+function setBusy(b) {
+  $('sendButton').textContent = b ? '■' : '↑';
+  $('sendButton').setAttribute('aria-label', b ? 'Stop' : 'Send');
+  $('sendButton').disabled = false;
+}
 
-    const waiting = {
-        role: "assistant",
-        content: "Lazarus is thinking…",
-        thinking: true
+/* Voice & Audio Layer */
+const synth = window.speechSynthesis;
+const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+let rec = null, spkBtn = null, listening = false, speakTok = 0, pending = 0, handsFree = false, micSend = false;
+
+const cleanText = t => t.replace(/```[\s\S]*?(```|$)/g, ' Code block. ').replace(/`/g, '').replace(/\[([^\]]*)\]\([^)]*\)/g, '$1').replace(/[*_#>|~]+/g, '').replace(/[ \t]+/g, ' ');
+function updateBtns() {
+  document.querySelectorAll('.spk').forEach(b => { const on = b === spkBtn && pending > 0; b.classList.toggle('on', on); b.lastChild.textContent = on ? 'Stop' : 'Listen'; });
+  $('mic').classList.toggle('on', listening);
+  $('spkbar').hidden = pending <= 0;
+}
+function stopSpeak() { speakTok++; pending = 0; if (synth) synth.cancel(); updateBtns(); }
+function afterSpeak() { updateBtns(); if (handsFree && !ctrl && !listening) startListen(); }
+function speakChunk(txt, tok) {
+  const t = txt.trim(); if (!synth || !t || tok !== speakTok) return;
+  const u = new SpeechSynthesisUtterance(t); pending++; updateBtns();
+  u.onend = u.onerror = () => { if (tok !== speakTok) return; pending--; if (pending <= 0) { pending = 0; afterSpeak(); } };
+  synth.speak(u);
+}
+function feed(st, text, final, tok) {
+  let rest = text.slice(st.i), m;
+  const re = /^[\s\S]*?([.!?:;]+["')\]]*\s|\n)/;
+  while ((m = re.exec(rest))) { speakChunk(m[0], tok); st.i += m[0].length; rest = rest.slice(m[0].length); }
+  if (final && rest.trim()) { speakChunk(rest, tok); st.i = text.length; }
+}
+function startListen() {
+  if (!SR) { alert('Speech recognition is not supported in this browser.'); return; }
+  if (ctrl) ctrl.abort();
+  stopSpeak(); if (listening) return;
+  const r = rec = new SR(); r.lang = navigator.language || 'en-US'; r.interimResults = true; r.continuous = false;
+  const base = $('messageInput').value ? $('messageInput').value + ' ' : ''; let fin = '';
+  r.onresult = e => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) { const x = e.results[i]; if (x.isFinal) fin += x[0].transcript; else interim += x[0].transcript; }
+    $('messageInput').value = base + fin + interim;
+    $('messageInput').style.height = 'auto'; $('messageInput').style.height = Math.min($('messageInput').scrollHeight, 180) + 'px';
+  };
+  r.onend = () => { listening = false; updateBtns(); if (!r._cancel) $('messageInput').focus(); };
+  r.start(); listening = true; updateBtns();
+}
+function stopListen(abort) { if (!rec) return; rec._cancel = !!abort; abort ? rec.abort() : rec.stop(); }
+function speakMsg(t, btn) {
+  const was = btn.classList.contains('on');
+  stopSpeak(); if (was) return;
+  handsFree = false; spkBtn = btn;
+  feed({ i: 0 }, cleanText(t._raw || t.innerText), true, speakTok); updateBtns();
+}
+async function copyText(s, b) {
+  try { await navigator.clipboard.writeText(s); }
+  catch { const a = document.createElement('textarea'); a.value = s; document.body.appendChild(a); a.select(); document.execCommand('copy'); a.remove(); }
+  const l = b.lastChild; l.textContent = 'Copied'; setTimeout(() => l.textContent = 'Copy', 1500);
+}
+
+/* Image shrinking layer */
+let pend = [];
+function shrink(file) {
+  return new Promise((res, rej) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const k = Math.min(1, 1280 / Math.max(img.width, img.height));
+      const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+      const g = c.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url); res(c.toDataURL('image/jpeg', 0.8));
     };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('Could not read image.')); };
+    img.src = url;
+  });
+}
+function renderThumbs() {
+  const t = $('thumbs'); t.innerHTML = ''; t.hidden = !pend.length;
+  pend.forEach((u, i) => {
+    const d = document.createElement('div'); d.className = 'th';
+    d.innerHTML = '<img alt="Photo to send"><button aria-label="Remove photo">✕</button>';
+    d.firstChild.src = u; d.lastChild.onclick = () => { pend.splice(i, 1); renderThumbs(); };
+    t.appendChild(d);
+  });
+}
+async function addFiles(files) {
+  for (const f of files) {
+    if (!f.type.startsWith('image/')) { alert('Only image files can be attached.'); continue; }
+    if (f.size > 12 * 1024 * 1024) { alert('Each image must be 12 MB or smaller.'); continue; }
+    if (pend.length >= 3) { alert('You can attach up to 3 photos per message.'); break; }
+    try { pend.push(await shrink(f)); } catch (e) { alert(e.message); }
+  }
+  renderThumbs();
+}
 
-    chat.messages.push(waiting);
-    sending = true;
-    $("sendButton").disabled = true;
-    $("sendButton").textContent = "…";
-    $("connectionStatus").textContent = "Thinking…";
-
-    renderMessages();
-
-    try {
-        /*
-         * This backend currently accepts text chat requests.
-         * It does not require a Supabase token in this frontend.
-         */
-        const history = chat.messages
-            .filter(item => item !== waiting)
-            .slice(0, -1)
-            .slice(-20)
-            .map(item => ({
-                role: item.role === "assistant" ? "assistant" : "user",
-                content: item.content || ""
-            }));
-
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 60000);
-
-        let response;
-
-        try {
-            response = await fetch(API_BASE + "/api/chat", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: text, history }),
-                signal: controller.signal
-            });
-        } finally {
-            clearTimeout(timeoutId);
-        }
-
-        const data = await response.json().catch(() => ({}));
-
-        if (!response.ok) {
-            throw new Error(
-                data.error || data.message || `Request failed (${response.status}).`
-            );
-        }
-
-        const reply = data.reply || data.response || data.message;
-
-        if (typeof reply !== "string" || !reply.trim()) {
-            throw new Error("The backend responded, but it returned no reply.");
-        }
-
-        waiting.content = reply;
-        waiting.thinking = false;
-        $("connectionStatus").textContent = "Backend online";
-    } catch (error) {
-        console.error("Lazarus chat error:", error);
-
-        waiting.thinking = false;
-
-        if (error.name === "AbortError") {
-            waiting.content = "Lazarus took too long to respond. Please try again.";
-        } else if (error instanceof TypeError) {
-            waiting.content =
-                "I couldn't reach the chat server. Check your internet connection and try again.";
-        } else {
-            waiting.content = "Couldn't get a response: " + (error.message || "Unknown error");
-        }
-
-        $("connectionStatus").textContent = "Chat error";
-    } finally {
-        chat.updatedAt = Date.now();
-        chats.sort((a, b) => b.updatedAt - a.updatedAt);
-        saveChats();
-        renderHistory();
-        renderMessages();
-
-        sending = false;
-        $("sendButton").disabled = false;
-        $("sendButton").textContent = "↑";
-        input.focus();
+function apiMessages() {
+  let budget = 3;
+  const recent = cur.messages.slice(-30);
+  const out = recent.map((m, i) => {
+    const fromEnd = recent.length - 1 - i;
+    if (m.role === 'user' && m.images && m.images.length && fromEnd < 8) return { m, imgs: m.images };
+    return { m, imgs: [] };
+  }).reverse().map(({ m, imgs }) => {
+    if (imgs.length && budget > 0) {
+      const use = imgs.slice(0, budget); budget -= use.length;
+      return { role: 'user', content: [{ type: 'text', text: m.content || 'What is in this image?' }, ...use.map(u => ({ type: 'image_url', image_url: { url: u } }))] };
     }
+    return { role: m.role, content: m.content || (m.images && m.images.length ? '[photo]' : ' ') };
+  }).reverse();
+  return [{ role: 'system', content: sysPrompt() }, ...out];
 }
 
-function applySettings() {
-    const settings = safeLoad(SETTINGS_KEY, {});
-    const theme = settings.theme === "light" ? "light" : "dark";
-    const size = ["small", "medium", "large"].includes(settings.textSize)
-        ? settings.textSize : "medium";
-
-    document.body.classList.toggle("light", theme === "light");
-
-    document.documentElement.style.setProperty(
-        "--font-size",
-        size === "small" ? "14px" : size === "large" ? "19px" : "16px"
-    );
-
-    $("themeSelect").value = theme;
-    $("textSizeSelect").value = size;
-    $("themeQuickButton").textContent = theme === "dark" ? "☼" : "☾";
-}
-
-function saveSettings() {
-    try {
-        localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-            theme: $("themeSelect").value,
-            textSize: $("textSizeSelect").value
-        }));
-    } catch (error) {
-        console.error("Could not save settings:", error);
-    }
-
-    applySettings();
-}
-
-function toggleTheme() {
-    $("themeSelect").value =
-        $("themeSelect").value === "dark" ? "light" : "dark";
-    saveSettings();
-}
-
-function isMobile() {
-    return window.matchMedia("(max-width: 760px)").matches;
-}
-
-function toggleSidebar() {
-    const sidebar = $("sidebar");
-
-    if (isMobile()) {
-        sidebar.classList.toggle("expanded");
-        $("mobileOverlay").classList.toggle(
-            "show",
-            sidebar.classList.contains("expanded")
-        );
-    } else {
-        sidebar.classList.toggle("collapsed");
-    }
-}
-
-function closeMobileSidebar() {
-    if (!isMobile()) return;
-    $("sidebar").classList.remove("expanded");
-    $("mobileOverlay").classList.remove("show");
-}
-
-async function checkBackend() {
-    $("connectionStatus").textContent = "Checking…";
-
-    try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
-
-        let response;
-
-        try {
-            response = await fetch(API_BASE + "/api/health", {
-                signal: controller.signal
-            });
-        } finally {
-            clearTimeout(timeoutId);
+async function send(regenIndex = null) {
+  if (ctrl) { ctrl.abort(); stopSpeak(); return; }
+  stopSpeak(); if (listening) stopListen(true);
+  handsFree = micSend; micSend = false;
+  const regenerating = Number.isInteger(regenIndex);
+  const input = $('messageInput');
+  const text = input.value.trim();
+  if (!regenerating && !text && !pend.length) return;
+  if (!cur) { cur = { id: uid(), title: 'New chat', messages: [] }; chats.unshift(cur); }
+  if (regenerating) {
+    if (regenIndex < 0 || regenIndex >= cur.messages.length || cur.messages[regenIndex].role !== 'assistant') return;
+    cur.messages = cur.messages.slice(0, regenIndex);
+  } else {
+    if (!cur.messages.length) cur.title = text.slice(0, 40) || 'Photo';
+    cur.messages.push({ role:'user', content:text, ...(pend.length ? { images: [...pend] } : {}) });
+    pend = []; renderThumbs();
+    input.value = ''; input.style.height = 'auto';
+  }
+  renderThread(); renderList();
+  const out = bubble('ai', '', null, cur.messages.length); let acc = '';
+  ctrl = new AbortController(); setBusy(true);
+  const tok = speakTok, st = { i: 0 };
+  try {
+    const r = await sb('/functions/v1/groq-chat', {
+      method:'POST', signal: ctrl.signal,
+      body: JSON.stringify({ messages: apiMessages() })
+    });
+    if (!r.ok) throw new Error((await r.json().catch(()=>({}))).error?.message || 'Request failed (' + r.status + ')');
+    if (!r.body) throw new Error('Empty response stream.');
+    const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+    const consumeSSE = line => {
+      if (!line.startsWith('data:')) return false;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === '[DONE]') return payload === '[DONE]';
+      try {
+        const data = JSON.parse(payload);
+        const delta = data?.choices?.[0]?.delta?.content;
+        if (typeof delta === 'string' && delta) {
+          acc += delta; out._raw = acc; renderMarkdown(out, acc);
+          $('chatView').scrollTop = $('chatView').scrollHeight;
+          if (handsFree) feed(st, cleanText(acc), false, tok);
         }
-
-        if (!response.ok) throw new Error("Health check failed");
-
-        const data = await response.json();
-
-        $("connectionStatus").textContent =
-            data.status === "ok" ? "Backend online" : "Backend issue";
-    } catch (error) {
-        console.error("Backend health check failed:", error);
-        $("connectionStatus").textContent = "Backend unavailable";
+      } catch (err) {}
+      return false;
+    };
+    let streamDone = false;
+    while (!streamDone) {
+      const { done, value } = await rd.read();
+      if (done) break;
+      buf += dec.decode(value, { stream:true });
+      const lines = buf.split(/\r?\n/); buf = lines.pop() || '';
+      for (const line of lines) if (consumeSSE(line)) { streamDone = true; break; }
     }
+    buf += dec.decode();
+    if (buf.trim()) consumeSSE(buf.trim());
+  } catch (e) {
+    if (e.name !== 'AbortError') {
+      const msg = e.message || 'Unknown error';
+      out.dataset.failed = 'true';
+      const notice = document.createElement('p'); notice.className = 'error-note'; notice.textContent = 'Request failed: ' + msg;
+      out.appendChild(notice);
+    }
+  }
+  if (!acc) { out.innerHTML = '<p style="color:var(--muted)">' + (out.dataset.failed ? 'No response received.' : 'Stopped.') + '</p>'; }
+  else { out._act.hidden = false; cur.messages.push({ role:'assistant', content:acc }); out._act.querySelector('.regen').dataset.index = cur.messages.length - 1; }
+  if (handsFree && acc) feed(st, cleanText(acc), true, tok);
+  ctrl = null; setBusy(false); renderList();
+  try { await Store.save(cur); } catch (e) { console.error(e); }
+  if (handsFree && acc && pending === 0 && tok === speakTok) afterSpeak();
 }
 
-/* BUTTONS */
-$("sidebarToggle").addEventListener("click", toggleSidebar);
-$("mobileOverlay").addEventListener("click", closeMobileSidebar);
-$("newChatButton").addEventListener("click", newChat);
-$("settingsButton").addEventListener("click", showSettings);
+async function loadName() {
+  prefs = Object.assign({ personality: 'default', length: 'balanced', about: '' }, LS.get('lz_prefs_' + user.id, {}));
+  if (user.guest) return LS.get('lz_guest_name', '');
+  if (!useSB) return LS.get('lz_name_' + user.id, '');
+  try {
+    const r = await sb('/rest/v1/profiles?select=display_name,settings&user_id=eq.' + user.id);
+    const j = r.ok ? await r.json() : [];
+    if (j[0] && j[0].settings && Object.keys(j[0].settings).length) prefs = Object.assign(prefs, j[0].settings);
+    return (j[0] && j[0].display_name) || '';
+  } catch { return ''; }
+}
 
-$("backToChat").addEventListener("click", () => {
-    showChat();
-    renderMessages();
+async function savePrefs() {
+  if (!LS.set('lz_prefs_' + user.id, prefs)) return false;
+  if (user.guest || !useSB) return true;
+  try {
+    const r = await sb('/rest/v1/profiles?on_conflict=user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ user_id: user.id, settings: prefs, updated_at: new Date().toISOString() }) });
+    return r.ok;
+  } catch { return false; }
+}
+
+function markPrefs() {
+  document.querySelectorAll('#pers button').forEach(b => b.classList.toggle('on', b.dataset.p === prefs.personality));
+  document.querySelectorAll('#lens button').forEach(b => b.classList.toggle('on', b.dataset.l === prefs.length));
+}
+
+function refreshWho() {
+  const n = prefName || (user.guest ? 'Guest' : user.email);
+  $('who').textContent = n; $('av').textContent = (n[0] || 'G').toUpperCase();
+}
+
+async function persistName(v) {
+  if (user.guest || !useSB) {
+    if (v && reserved(v)) throw new Error('That name is reserved.');
+    if (!LS.set(user.guest ? 'lz_guest_name' : 'lz_name_' + user.id, v)) throw new Error('Storage unavailable.');
+    return;
+  }
+  const r = await sb('/rest/v1/profiles?on_conflict=user_id', { method: 'POST', headers: { Prefer: 'resolution=merge-duplicates,return=minimal' }, body: JSON.stringify({ user_id: user.id, display_name: v || null, updated_at: new Date().toISOString() }) });
+  if (r.status === 409) throw new Error('That name is already taken.');
+  if (!r.ok) throw new Error('Could not save.');
+}
+
+const mq = matchMedia('(prefers-color-scheme: light)');
+function markTheme() { const m = LS.get('lz_theme', 'dark'); document.querySelectorAll('#seg button').forEach(b => b.classList.toggle('on', b.dataset.t === m)); }
+function applyTheme(m) { LS.set('lz_theme', m); document.documentElement.setAttribute('data-theme', m === 'system' ? (mq.matches ? 'light' : 'dark') : m); markTheme(); }
+mq.addEventListener('change', () => { if (LS.get('lz_theme', 'dark') === 'system') applyTheme('system'); });
+
+async function enter(u) {
+  user = u; $('auth').hidden = true;
+  prefName = await loadName(); refreshWho();
+  $('out').textContent = u.guest ? 'Sign in' : 'Sign out';
+  try { chats = await Store.load(); } catch (e) { chats = []; }
+  cur = null; renderThread(); renderList();
+}
+
+/* Event Listeners */
+$('sidebarToggle').addEventListener('click', () => {
+  if (window.matchMedia("(max-width: 760px)").matches) {
+    $('sidebar').classList.toggle('open');
+  } else {
+    $('sidebar').classList.toggle('collapsed');
+  }
 });
 
-$("themeSelect").addEventListener("change", saveSettings);
-$("textSizeSelect").addEventListener("change", saveSettings);
-$("themeQuickButton").addEventListener("click", toggleTheme);
-$("clearHistoryButton").addEventListener("click", clearHistory);
-$("settingsClearHistory").addEventListener("click", clearHistory);
-$("sendButton").addEventListener("click", sendMessage);
+$('menu').addEventListener('click', () => $('sidebar').classList.toggle('open'));
+$('newChatButton').addEventListener('click', () => { if (ctrl) return; cur = null; renderThread(); renderList(); $('sidebar').classList.remove('open'); });
 
-/* Enter sends. Shift + Enter adds a newline. */
-$("messageInput").addEventListener("keydown", event => {
-    if (
-        event.key === "Enter" &&
-        !event.shiftKey &&
-        !event.isComposing
-    ) {
-        event.preventDefault();
-        sendMessage();
-    }
+$('af').onsubmit = async e => {
+  e.preventDefault(); $('err').textContent = ''; $('ab').disabled = true;
+  try {
+    const un = $('un').value.trim();
+    if (signup && (un.length < 2 || un.length > 30)) throw new Error('Username must be 2-30 characters.');
+    await enter(await Auth.login($('em').value.trim().toLowerCase(), $('pw').value, signup, un)); $('pw').value = '';
+  } catch (x) { $('err').textContent = x.message; }
+  $('ab').disabled = false;
+};
+
+$('sw').onclick = () => {
+  signup = !signup; $('err').textContent = ''; $('un').hidden = !signup; $('un').required = signup;
+  $('ab').textContent = signup ? 'Create account' : 'Sign in';
+  $('sw').textContent = signup ? 'Have an account? Sign in' : 'New here? Create an account';
+  $('at').textContent = signup ? 'Create an account to save your chats' : 'Sign in to pick up where you left off';
+};
+
+$('out').onclick = async () => {
+  if (ctrl) ctrl.abort();
+  if (user.guest) { $('auth').hidden = false; return; }
+  await Auth.out(); stopSpeak(); if (listening) stopListen(true); pend = []; renderThumbs(); await enter(GUEST);
+};
+$('gs').onclick = async () => { $('err').textContent = ''; await enter(GUEST); };
+
+$('gear').onclick = () => {
+  const d = defName(user);
+  $('dn').value = prefName; $('dn').placeholder = d && !reserved(d) ? d : 'Your name';
+  $('dmsg').textContent = ''; $('dmsg').className = ''; $('amsg').textContent = ''; $('about').value = prefs.about || '';
+  markPrefs(); markTheme(); $('set').hidden = false; $('dn').focus();
+};
+$('sx').onclick = () => { $('set').hidden = true; };
+$('set').addEventListener('click', e => { if (e.target === $('set')) $('set').hidden = true; });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { $('set').hidden = true; stopSpeak(); if (listening) stopListen(true); } });
+
+$('seg').addEventListener('click', e => { const b = e.target.closest('button'); if (b) applyTheme(b.dataset.t); });
+$('pers').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; prefs.personality = b.dataset.p; markPrefs(); savePrefs(); });
+$('lens').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; prefs.length = b.dataset.l; markPrefs(); savePrefs(); });
+$('asave').onclick = async () => {
+  prefs.about = $('about').value.trim().slice(0, 500);
+  const ok = await savePrefs(), m = $('amsg');
+  m.className = ok ? '' : 'bad'; m.textContent = ok ? 'Saved.' : 'Saved locally only.';
+};
+$('dn').addEventListener('keydown', e => { if (e.key === 'Enter') $('dsave').click(); });
+$('dsave').onclick = async () => {
+  const v = $('dn').value.trim().slice(0, 30), m = $('dmsg'); m.className = ''; m.textContent = '';
+  try {
+    await persistName(v); prefName = v; refreshWho();
+    if (!cur || !cur.messages.length) renderThread();
+    m.textContent = v ? 'Saved.' : 'Cleared.';
+  } catch (e) { m.className = 'bad'; m.textContent = e.message; }
+};
+
+$('att').onclick = () => $('file').click();
+$('file').onchange = e => { addFiles([...e.target.files]); e.target.value = ''; };
+$('messageInput').addEventListener('paste', e => { const fs = [...((e.clipboardData && e.clipboardData.files) || [])].filter(f => f.type.startsWith('image/')); if (fs.length) { e.preventDefault(); addFiles(fs); } });
+document.addEventListener('dragover', e => e.preventDefault());
+document.addEventListener('drop', e => { e.preventDefault(); const fs = [...((e.dataTransfer && e.dataTransfer.files) || [])]; if (fs.length) addFiles(fs); });
+
+$('mic').onclick = () => { if (listening) stopListen(); else startListen(); };
+$('spstop').onclick = stopSpeak;
+
+$('messages').addEventListener('click', e => {
+  const b = e.target.closest('.ab'); if (!b) return;
+  const t = b.closest('.message-content').querySelector('.t');
+  if (b.classList.contains('copy')) copyText(t._raw || t.innerText, b);
+  else if (b.classList.contains('regen')) send(Number(b.dataset.index));
+  else speakMsg(t, b);
 });
 
-/* Automatically resize the message box. */
-$("messageInput").addEventListener("input", () => {
-    const input = $("messageInput");
-    input.style.height = "auto";
-    input.style.height = Math.min(input.scrollHeight, 180) + "px";
+$('messageInput').addEventListener('input', () => {
+  if (pending > 0) stopSpeak();
+  const input = $('messageInput');
+  input.style.height = "auto";
+  input.style.height = Math.min(input.scrollHeight, 180) + "px";
 });
 
-/* Restore saved preferences and conversations. */
-applySettings();
+$('messageInput').addEventListener('keydown', event => {
+  if (event.key === "Enter" && !event.shiftKey && !event.isComposing) {
+    event.preventDefault();
+    send();
+  }
+});
 
-const savedChats = safeLoad(CHAT_KEY, []);
-chats = Array.isArray(savedChats)
-    ? savedChats.filter(chat =>
-        chat &&
-        typeof chat.id === "string" &&
-        Array.isArray(chat.messages)
-    )
-    : [];
+$('sendButton').addEventListener('click', () => send());
 
-chats.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
-currentChatId = chats[0]?.id || null;
-
-renderHistory();
-
-if (!currentChatId) {
-    newChat();
-} else {
-    showChat();
-    renderMessages();
-}
-
-checkBackend();
+applyTheme(LS.get('lz_theme', 'dark'));
+Auth.restore().then(u => enter(u || GUEST)).catch(() => enter(GUEST));
+updateBtns();
 </script>
 </body>
 </html>
