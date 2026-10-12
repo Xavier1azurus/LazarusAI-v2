@@ -1856,7 +1856,8 @@ applyTheme(LS.get('lz_theme', 'dark'));
 Auth.restore().then(u => enter(u || GUEST)).catch(() => enter(GUEST));
 updateBtns();
 
-/* ===== LAZARUS STUDY MODE ===== */
+
+/* ===== LAZARUS STUDY MODE — INTERACTIVE UPGRADE ===== */
 (() => {
   const view = $('studyView');
   const chatView = $('chatView');
@@ -1870,7 +1871,16 @@ updateBtns();
   let studyBusy = false;
   let studyController = null;
   let studyCards = [];
-  let previousScreen = 'chat';
+  let quiz = [];
+  let quizIndex = 0;
+  let quizScore = 0;
+  let quizAnswered = false;
+  let quizFinished = false;
+  let quizWrittenValue = '';
+  let quizTopic = '';
+  let calculatorValue = '0';
+  let calculatorFresh = true;
+  let calculatorOpen = false;
 
   const modes = {
     learn: {
@@ -1881,7 +1891,7 @@ updateBtns();
     },
     quiz: {
       title: 'Quiz Mode',
-      description: 'Generate practice questions, answer them, and get feedback on your answers.',
+      description: 'Answer interactive multiple-choice and written questions. Track your progress and score.',
       placeholder: 'Example: Make a 10-question quiz about fractions...',
       action: 'Generate quiz →'
     },
@@ -1899,9 +1909,235 @@ updateBtns();
     }
   };
 
+  /* ---------- Calculator UI ---------- */
+
+  const toolsBar = document.createElement('div');
+  toolsBar.className = 'study-tools';
+
+  const calculatorButton = document.createElement('button');
+  calculatorButton.type = 'button';
+  calculatorButton.className = 'calculator-toggle';
+  calculatorButton.textContent = '▦ Calculator';
+  calculatorButton.setAttribute('aria-expanded', 'false');
+
+  toolsBar.appendChild(calculatorButton);
+
+  const existingTools = view.querySelector('.study-tools');
+  if (!existingTools) {
+    view.prepend(toolsBar);
+  }
+
+  const calculator = document.createElement('section');
+  calculator.className = 'calculator-popup';
+  calculator.hidden = true;
+  calculator.setAttribute('aria-label', 'Calculator');
+
+  const calcHeader = document.createElement('div');
+  calcHeader.className = 'calculator-header';
+
+  const calcTitle = document.createElement('strong');
+  calcTitle.textContent = 'Calculator';
+
+  const calcClose = document.createElement('button');
+  calcClose.type = 'button';
+  calcClose.textContent = '×';
+  calcClose.setAttribute('aria-label', 'Close calculator');
+
+  calcHeader.append(calcTitle, calcClose);
+
+  const calcDisplay = document.createElement('input');
+  calcDisplay.className = 'calculator-display';
+  calcDisplay.type = 'text';
+  calcDisplay.value = calculatorValue;
+  calcDisplay.readOnly = true;
+  calcDisplay.setAttribute('aria-label', 'Calculator display');
+
+  const calcKeys = document.createElement('div');
+  calcKeys.className = 'calculator-keys';
+
+  [
+    'C', '⌫', '%', '÷',
+    '7', '8', '9', '×',
+    '4', '5', '6', '−',
+    '1', '2', '3', '+',
+    '±', '0', '.', '=',
+  ].forEach(key => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = key;
+    b.dataset.key = key;
+    b.setAttribute('aria-label', key);
+    calcKeys.appendChild(b);
+  });
+
+  calculator.append(calcHeader, calcDisplay, calcKeys);
+  document.body.appendChild(calculator);
+
+  calculatorButton.addEventListener('click', () => {
+    calculatorOpen = !calculatorOpen;
+    calculator.hidden = !calculatorOpen;
+    calculatorButton.setAttribute('aria-expanded', String(calculatorOpen));
+  });
+
+  calcClose.addEventListener('click', () => {
+    calculatorOpen = false;
+    calculator.hidden = true;
+    calculatorButton.setAttribute('aria-expanded', 'false');
+  });
+
+  function updateCalculator() {
+    calcDisplay.value = calculatorValue;
+  }
+
+  function calculateExpression(expression) {
+    const tokens = expression.match(
+      /(?:\d+(?:\.\d*)?|\.\d+)|[+\-*/()]|\s+/g
+    );
+
+    if (!tokens || tokens.join('').replace(/\s/g, '') !== expression.replace(/\s/g, '')) {
+      throw new Error('Invalid expression');
+    }
+
+    const clean = tokens.join('').replace(/\s/g, '');
+
+    if (!clean || !/^[\d.+\-*/()]+$/.test(clean)) {
+      throw new Error('Invalid expression');
+    }
+
+    let position = 0;
+
+    function factor() {
+      if (clean[position] === '+') {
+        position++;
+        return factor();
+      }
+
+      if (clean[position] === '-') {
+        position++;
+        return -factor();
+      }
+
+      if (clean[position] === '(') {
+        position++;
+        const result = expressionPart();
+
+        if (clean[position] !== ')') {
+          throw new Error('Missing closing bracket');
+        }
+
+        position++;
+        return result;
+      }
+
+      const match = clean.slice(position).match(/^(?:\d+(?:\.\d*)?|\.\d+)/);
+
+      if (!match) throw new Error('Expected a number');
+
+      position += match[0].length;
+      return Number(match[0]);
+    }
+
+    function term() {
+      let value = factor();
+
+      while (clean[position] === '*' || clean[position] === '/') {
+        const operator = clean[position++];
+        const right = factor();
+
+        if (operator === '/' && right === 0) {
+          throw new Error('Cannot divide by zero');
+        }
+
+        value = operator === '*' ? value * right : value / right;
+      }
+
+      return value;
+    }
+
+    function expressionPart() {
+      let value = term();
+
+      while (clean[position] === '+' || clean[position] === '-') {
+        const operator = clean[position++];
+        const right = term();
+        value = operator === '+' ? value + right : value - right;
+      }
+
+      return value;
+    }
+
+    const result = expressionPart();
+
+    if (position !== clean.length || !Number.isFinite(result)) {
+      throw new Error('Invalid calculation');
+    }
+
+    return Number(result.toPrecision(12));
+  }
+
+  function pressCalculatorKey(key) {
+    if (key === 'C') {
+      calculatorValue = '0';
+      calculatorFresh = true;
+    } else if (key === '⌫') {
+      calculatorValue = calculatorFresh
+        ? '0'
+        : calculatorValue.slice(0, -1) || '0';
+    } else if (key === '±') {
+      if (calculatorValue !== '0' && calculatorFresh) {
+        calculatorValue = String(-Number(calculatorValue));
+      } else if (calculatorValue !== '0') {
+        calculatorValue = calculatorValue.startsWith('-')
+          ? calculatorValue.slice(1)
+          : '-' + calculatorValue;
+      }
+    } else if (key === '=') {
+      try {
+        calculatorValue = String(calculateExpression(calculatorValue));
+        calculatorFresh = true;
+      } catch {
+        calculatorValue = 'Error';
+        calculatorFresh = true;
+      }
+    } else if (key === '%') {
+      try {
+        calculatorValue = String(
+          Number((calculateExpression(calculatorValue) / 100).toPrecision(12))
+        );
+        calculatorFresh = true;
+      } catch {
+        calculatorValue = 'Error';
+        calculatorFresh = true;
+      }
+    } else {
+      const symbol = ({ '×': '*', '÷': '/', '−': '-' })[key] || key;
+
+      if (calculatorValue === 'Error' || calculatorFresh) {
+        calculatorValue = /[\d.]/.test(symbol) ? symbol : calculatorValue === 'Error' ? '0' : calculatorValue;
+        calculatorFresh = false;
+      } else {
+        calculatorValue += symbol;
+      }
+    }
+
+    updateCalculator();
+  }
+
+  calcKeys.addEventListener('click', event => {
+    const b = event.target.closest('button[data-key]');
+    if (b) pressCalculatorKey(b.dataset.key);
+  });
+
+  /* ---------- Study Mode navigation ---------- */
+
   function selectMode(next) {
+    if (!modes[next]) return;
+
+    if (studyController) studyController.abort();
+
     mode = next;
-    const config = modes[mode];
+    studyBusy = false;
+    studyController = null;
 
     tabs.forEach(tab => {
       const active = tab.dataset.studyMode === mode;
@@ -1909,20 +2145,28 @@ updateBtns();
       tab.setAttribute('aria-selected', String(active));
     });
 
-    $('studyTitle').textContent = config.title;
-    $('studyDescription').textContent = config.description;
-    $('studyInput').placeholder = config.placeholder;
-    $('studyGo').textContent = config.action;
-    $('studyAnswerArea').hidden = mode !== 'quiz';
+    $('studyTitle').textContent = modes[mode].title;
+    $('studyDescription').textContent = modes[mode].description;
+    $('studyInput').placeholder = modes[mode].placeholder;
+    $('studyGo').textContent = modes[mode].action;
+    $('studyAnswerArea').hidden = true;
 
     $('studyResult').replaceChildren();
     $('studyFlashcards').replaceChildren();
     $('studyStatus').textContent = '';
+
+    quiz = [];
+    quizIndex = 0;
+    quizScore = 0;
+    quizAnswered = false;
+    quizFinished = false;
+    quizWrittenValue = '';
+    quizTopic = '';
     studyCards = [];
+    $('studyGo').disabled = false;
   }
 
   function openStudy() {
-    previousScreen = view.hidden ? 'chat' : 'study';
     view.hidden = false;
     chatView.hidden = true;
     composer.hidden = true;
@@ -1937,58 +2181,63 @@ updateBtns();
   }
 
   button.addEventListener('click', () => {
-    if (!view.hidden) {
-      closeStudy();
-    } else {
-      openStudy();
-    }
+    if (!view.hidden) closeStudy();
+    else openStudy();
   });
 
   tabs.forEach(tab => {
     tab.addEventListener('click', () => selectMode(tab.dataset.studyMode));
   });
 
+  /* ---------- Prompts ---------- */
+
   function systemPrompt() {
     const base = [
       'You are Lazarus AI Study Mode, a patient and encouraging tutor.',
-      'Teach for understanding, use age-appropriate language, and explain unfamiliar terms.',
-      'Use Markdown headings and numbered steps when useful.',
-      'Do not claim to have checked answers that the student has not provided.'
+      'Use clear, age-appropriate explanations.',
+      'Teach understanding instead of just giving unexplained answers.',
+      'Use Markdown when it helps.'
     ];
 
     if (mode === 'learn') {
       base.push(
-        'Teach the topic step by step. Give a simple explanation, a worked example, and a short practice question at the end.'
-      );
-    } else if (mode === 'quiz') {
-      base.push(
-        'Create a quiz with 5 clear numbered questions unless the user requests a different number. Do not include the answer key in the initial quiz. The student will submit their answers separately for grading.'
-      );
-    } else if (mode === 'flashcards') {
-      base.push(
-        'Return ONLY valid JSON in this exact shape: {"cards":[{"front":"Question or term","back":"Answer or definition"}]}. Make 6 to 10 useful flashcards. Do not wrap the JSON in Markdown fences.'
-      );
-    } else if (mode === 'homework') {
-      base.push(
-        'Help the student understand their homework. Start with a hint, then explain the method step by step. For practice problems, show a worked example where useful. Do not just give unexplained answers.'
+        'Teach step by step. Include a simple explanation, a worked example, and a short practice question.'
       );
     }
 
-    if (mode === 'quiz' && $('studyAnswer').value.trim()) {
+    if (mode === 'quiz') {
       base.push(
-        'The student has submitted these answers to the quiz: ' +
-        $('studyAnswer').value.trim() +
-        '. Mark each answer, explain mistakes, and give a final score. If the original quiz is not in the conversation, ask them to provide it.'
+        'Create a quiz based on the requested topic.',
+        'Return ONLY valid JSON with this exact structure:',
+        '{"questions":[{"type":"multiple-choice","question":"Question text","options":["Option A","Option B","Option C","Option D"],"answer":"Exact correct option text","explanation":"Short explanation"},{"type":"written","question":"Question requiring a written answer","answer":"Expected answer","explanation":"How to solve it"}]}',
+        'Include 10 questions by default, or the number the student requests, with a maximum of 30.',
+        'Mix multiple-choice and written questions when appropriate.',
+        'Each multiple-choice question must have exactly four distinct options.',
+        'The answer must match one option exactly for multiple-choice questions.',
+        'Written answers must have a clear expected answer.',
+        'Do not include Markdown fences or any text outside the JSON.',
+        'Do not reveal answers or explanations before the student submits each answer.'
+      );
+    }
+
+    if (mode === 'flashcards') {
+      base.push(
+        'Return ONLY valid JSON in this exact shape: {"cards":[{"front":"Question or term","back":"Answer or definition"}]}.',
+        'Make 6 to 10 useful flashcards. Do not wrap the JSON in Markdown fences.'
+      );
+    }
+
+    if (mode === 'homework') {
+      base.push(
+        'Start with a hint, then explain the method step by step.',
+        'Show a worked example where useful.'
       );
     }
 
     return base.join(' ');
   }
 
-  function renderStudyMarkdown(text) {
-    const result = $('studyResult');
-    renderMarkdown(result, text);
-  }
+  /* ---------- Flashcards ---------- */
 
   function showCards(cards) {
     const container = $('studyFlashcards');
@@ -1997,12 +2246,14 @@ updateBtns();
 
     cards.forEach((card, index) => {
       let showingAnswer = false;
+
       const b = document.createElement('button');
       b.type = 'button';
       b.className = 'study-flashcard';
 
       function draw() {
         b.replaceChildren();
+
         const small = document.createElement('small');
         small.textContent = showingAnswer
           ? 'ANSWER · TAP TO FLIP BACK'
@@ -2025,27 +2276,295 @@ updateBtns();
   }
 
   function parseCards(text) {
-    const cleaned = text
-      .trim()
+    const cleaned = text.trim()
       .replace(/^```(?:json)?\s*/i, '')
       .replace(/\s*```$/, '');
 
     const data = JSON.parse(cleaned);
 
     if (!Array.isArray(data.cards)) {
-      throw new Error('The response did not contain a flashcard list.');
+      throw new Error('No flashcards were returned.');
     }
 
     const cards = data.cards
       .filter(c => c && typeof c.front === 'string' && typeof c.back === 'string')
       .slice(0, 20);
 
-    if (!cards.length) {
-      throw new Error('No valid flashcards were returned. Try generating them again.');
-    }
+    if (!cards.length) throw new Error('No valid flashcards were returned.');
 
     return cards;
   }
+
+  /* ---------- Interactive quiz ---------- */
+
+  function parseQuiz(text) {
+    const cleaned = text.trim()
+      .replace(/^```(?:json)?\s*/i, '')
+      .replace(/\s*```$/, '');
+
+    const data = JSON.parse(cleaned);
+
+    if (!Array.isArray(data.questions)) {
+      throw new Error('The response did not contain a quiz.');
+    }
+
+    const questions = data.questions
+      .filter(q =>
+        q &&
+        typeof q.question === 'string' &&
+        typeof q.answer === 'string'
+      )
+      .map(q => ({
+        type: q.type === 'written' ? 'written' : 'multiple-choice',
+        question: q.question,
+        options: Array.isArray(q.options)
+          ? q.options.filter(o => typeof o === 'string').slice(0, 4)
+          : [],
+        answer: q.answer.trim(),
+        explanation: typeof q.explanation === 'string' ? q.explanation : ''
+      }))
+      .filter(q =>
+        q.question &&
+        q.answer &&
+        (q.type === 'written' ||
+          (q.options.length === 4 && q.options.includes(q.answer)))
+      )
+      .slice(0, 30);
+
+    if (!questions.length) {
+      throw new Error('The quiz format was invalid. Please generate it again.');
+    }
+
+    return questions;
+  }
+
+  function addText(parent, tag, className, text) {
+    const el = document.createElement(tag);
+    if (className) el.className = className;
+    el.textContent = text;
+    parent.appendChild(el);
+    return el;
+  }
+
+  function renderQuizQuestion() {
+    const result = $('studyResult');
+    result.replaceChildren();
+
+    if (!quiz.length) return;
+
+    if (quizFinished) {
+      addText(result, 'h3', 'quiz-question', 'Quiz complete!');
+      addText(
+        result,
+        'p',
+        'quiz-feedback',
+        'Your score: ' + quizScore + ' out of ' + quiz.length +
+        ' (' + Math.round(quizScore / quiz.length * 100) + '%).'
+      );
+
+      addText(
+        result,
+        'p',
+        '',
+        quizScore === quiz.length
+          ? 'Perfect score! Great work.'
+          : 'Review the questions you missed, then try again.'
+      );
+
+      const restart = document.createElement('button');
+      restart.type = 'button';
+      restart.className = 'calculator-toggle';
+      restart.textContent = 'Try another quiz';
+      restart.addEventListener('click', () => {
+        $('studyStatus').textContent = '';
+        quiz = [];
+        quizFinished = false;
+        $('studyInput').value = quizTopic;
+        startQuiz(quizTopic);
+      });
+
+      result.appendChild(restart);
+      $('studyStatus').textContent = 'Quiz finished. Your final score is shown above.';
+      return;
+    }
+
+    const q = quiz[quizIndex];
+
+    const progress = document.createElement('div');
+    progress.className = 'quiz-progress';
+
+    addText(
+      progress,
+      'span',
+      '',
+      'Question ' + (quizIndex + 1) + ' of ' + quiz.length
+    );
+
+    addText(progress, 'span', 'quiz-score', 'Score: ' + quizScore);
+
+    result.appendChild(progress);
+
+    const track = document.createElement('div');
+    track.className = 'quiz-progress-track';
+
+    const fill = document.createElement('div');
+    fill.className = 'quiz-progress-fill';
+    fill.style.width = ((quizIndex + 1) / quiz.length * 100) + '%';
+
+    track.appendChild(fill);
+    result.appendChild(track);
+
+    addText(result, 'h3', 'quiz-question', q.question);
+
+    const feedback = document.createElement('div');
+    feedback.className = 'quiz-feedback';
+    feedback.hidden = true;
+    result.appendChild(feedback);
+
+    if (q.type === 'multiple-choice') {
+      const options = document.createElement('div');
+      options.className = 'quiz-options';
+
+      q.options.forEach(option => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'quiz-option';
+        b.textContent = option;
+
+        b.addEventListener('click', () => {
+          if (quizAnswered) return;
+
+          quizAnswered = true;
+          const correct = option === q.answer;
+
+          if (correct) quizScore++;
+
+          options.querySelectorAll('button').forEach(opt => {
+            opt.disabled = true;
+
+            if (opt.textContent === q.answer) {
+              opt.classList.add('correct');
+            } else if (opt === b && !correct) {
+              opt.classList.add('incorrect');
+            }
+          });
+
+          feedback.hidden = false;
+          feedback.textContent =
+            (correct ? 'Correct! ' : 'Not quite. Correct answer: ' + q.answer + '. ') +
+            q.explanation;
+
+          updateQuizFooter();
+        });
+
+        options.appendChild(b);
+      });
+
+      result.appendChild(options);
+    } else {
+      const answer = document.createElement('textarea');
+      answer.className = 'quiz-answer-input';
+      answer.placeholder = 'Write your answer here...';
+      answer.rows = 3;
+      answer.setAttribute('aria-label', 'Your written answer');
+      answer.disabled = quizAnswered;
+      answer.value = quizWrittenValue;
+
+      answer.addEventListener('input', () => {
+        quizWrittenValue = answer.value;
+      });
+
+      result.appendChild(answer);
+
+      const submit = document.createElement('button');
+      submit.type = 'button';
+      submit.className = 'calculator-toggle';
+      submit.textContent = 'Submit answer';
+      submit.disabled = quizAnswered;
+
+      submit.addEventListener('click', () => {
+        const response = answer.value.trim();
+
+        if (!response) {
+          feedback.hidden = false;
+          feedback.textContent = 'Write an answer before submitting.';
+          return;
+        }
+
+        quizAnswered = true;
+        quizWrittenValue = response;
+        answer.disabled = true;
+        submit.disabled = true;
+
+        const expected = q.answer.trim().toLowerCase();
+        const given = response.trim().toLowerCase();
+        const correct = given === expected;
+
+        if (correct) quizScore++;
+
+        feedback.hidden = false;
+        feedback.textContent =
+          (correct
+            ? 'Correct! '
+            : 'Expected answer: ' + q.answer + '. Your answer may earn partial credit if it shows the right idea. ') +
+          q.explanation;
+
+        updateQuizFooter();
+      });
+
+      result.appendChild(submit);
+    }
+
+    function updateQuizFooter() {
+      let footer = result.querySelector('.quiz-actions');
+
+      if (!footer) {
+        footer = document.createElement('div');
+        footer.className = 'quiz-actions';
+        result.appendChild(footer);
+      }
+
+      footer.replaceChildren();
+
+      addText(footer, 'span', 'quiz-score', 'Score: ' + quizScore + ' / ' + quiz.length);
+
+      if (!quizAnswered) return;
+
+      const next = document.createElement('button');
+      next.type = 'button';
+      next.className = 'calculator-toggle';
+      next.textContent = quizIndex === quiz.length - 1 ? 'See results →' : 'Next question →';
+
+      next.addEventListener('click', () => {
+        if (!quizAnswered) return;
+
+        if (quizIndex < quiz.length - 1) {
+          quizIndex++;
+          quizAnswered = false;
+          quizWrittenValue = '';
+          renderQuizQuestion();
+        } else {
+          quizFinished = true;
+          renderQuizQuestion();
+        }
+      });
+
+      footer.appendChild(next);
+    }
+  }
+
+  function startQuiz(topic) {
+    quizTopic = topic;
+    quizIndex = 0;
+    quizScore = 0;
+    quizAnswered = false;
+    quizFinished = false;
+    quizWrittenValue = '';
+    $('studyAnswerArea').hidden = true;
+    renderQuizQuestion();
+  }
+
+  /* ---------- AI request ---------- */
 
   async function askStudyAI(prompt) {
     if (studyBusy) return;
@@ -2063,6 +2582,7 @@ updateBtns();
 
     studyBusy = true;
     studyController = new AbortController();
+
     $('studyGo').disabled = true;
     $('studyStatus').textContent = 'Lazarus is preparing your study material...';
     $('studyResult').replaceChildren();
@@ -2070,19 +2590,16 @@ updateBtns();
 
     try {
       const sessionCheck = await sb('/auth/v1/user');
+
       if (!sessionCheck.ok) {
         throw new Error('Your session expired. Please sign in again.');
       }
 
       const session = LS.get('lz_session');
+
       if (!session?.access_token) {
         throw new Error('Please sign in again to continue.');
       }
-
-      const messages = [
-        { role: 'system', content: systemPrompt() },
-        { role: 'user', content: prompt }
-      ];
 
       const response = await fetch(
         'https://lazarus-backend-75ik.onrender.com/api/chat',
@@ -2093,7 +2610,12 @@ updateBtns();
             'Content-Type': 'application/json',
             'Authorization': 'Bearer ' + session.access_token
           },
-          body: JSON.stringify({ messages })
+          body: JSON.stringify({
+            messages: [
+              { role: 'system', content: systemPrompt() },
+              { role: 'user', content: prompt }
+            ]
+          })
         }
       );
 
@@ -2125,12 +2647,12 @@ updateBtns();
           if (typeof delta === 'string') {
             answer += delta;
 
-            if (mode !== 'flashcards') {
-              renderStudyMarkdown(answer);
+            if (mode !== 'flashcards' && mode !== 'quiz') {
+              renderMarkdown($('studyResult'), answer);
             }
           }
         } catch {
-          // Ignore non-JSON stream lines.
+          // Ignore incomplete streaming chunks.
         }
 
         return false;
@@ -2141,6 +2663,7 @@ updateBtns();
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
+
         const lines = buffer.split(/\r?\n/);
         buffer = lines.pop() || '';
 
@@ -2153,22 +2676,30 @@ updateBtns();
       }
 
       buffer += decoder.decode();
+
       if (buffer.trim()) consumeLine(buffer.trim());
 
       if (!answer.trim()) {
         throw new Error('Lazarus returned an empty response. Please try again.');
       }
 
-      if (mode === 'flashcards') {
+      if (mode === 'quiz') {
+        startQuiz(prompt);
+
         try {
-          showCards(parseCards(answer));
+          quiz = parseQuiz(answer);
+          renderQuizQuestion();
           $('studyStatus').textContent =
-            'Your flashcards are ready. Tap any card to reveal its answer.';
+            'Your quiz is ready! Select an answer or type your written response.';
         } catch {
-          renderStudyMarkdown(answer);
-          $('studyStatus').textContent =
-            'Flashcards could not be formatted automatically. Try generating them again.';
+          quiz = [];
+          $('studyResult').replaceChildren();
+          throw new Error('The quiz could not be formatted. Please try generating it again.');
         }
+      } else if (mode === 'flashcards') {
+        showCards(parseCards(answer));
+        $('studyStatus').textContent =
+          'Your flashcards are ready. Tap any card to reveal its answer.';
       } else {
         $('studyStatus').textContent = 'Ready. Keep practising!';
       }
@@ -2186,18 +2717,15 @@ updateBtns();
   $('studyGo').addEventListener('click', () => {
     const topic = $('studyInput').value.trim();
 
-    if (mode === 'quiz' && $('studyAnswer').value.trim()) {
-      askStudyAI(
-        'Grade the student answers below. Quiz topic or original quiz:\n' +
-        topic +
-        '\n\nStudent answers:\n' +
-        $('studyAnswer').value.trim()
-      );
+    if (!topic) {
+      $('studyStatus').textContent = 'Enter a topic or question first.';
       return;
     }
 
     if (mode === 'quiz') {
-      $('studyAnswer').value = '';
+      startQuiz(topic);
+      askStudyAI(topic);
+      return;
     }
 
     askStudyAI(topic);
@@ -2212,6 +2740,7 @@ updateBtns();
 
   selectMode('learn');
 })();
+
 
 </script>
 
