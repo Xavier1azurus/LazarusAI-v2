@@ -2256,11 +2256,13 @@ function showCards(cards) {
   }
 
   // Clear old cards and make the display visible.
-  container.replaceChildren();
-  container.style.display = 'grid';
-  container.style.visibility = 'visible';
-  container.style.opacity = '1';
+  // Show the parent area too, not just the cards.
+$('studyAnswerArea').hidden = false;
 
+container.replaceChildren();
+container.style.display = 'grid';
+container.style.visibility = 'visible';
+container.style.opacity = '1';
   studyCards = cards;
 
   cards.forEach((card, index) => {
@@ -2721,10 +2723,8 @@ function showCards(cards) {
             'I could not create flashcards. Try again with a shorter, clearer topic.';
           $('studyResult').innerHTML = '';
         } else {
-          showCards(cards);
-          $('studyStatus').textContent =
-            `Your ${cards.length} flashcards are ready! Tap any card to reveal its answer.`;
-        }
+  showCards(cards);
+}
       } else {
         $('studyStatus').textContent = 'Ready. Keep practising!';
       }
