@@ -2275,25 +2275,46 @@ updateBtns();
     });
   }
 
-  function parseCards(text) {
-    const cleaned = text.trim()
-      .replace(/^```(?:json)?\s*/i, '')
-      .replace(/\s*```$/, '');
+  
+function parseCards(text) {
+  let cleaned = text.trim()
+    .replace(/```(?:json)?/gi, '')
+    .trim();
 
-    const data = JSON.parse(cleaned);
+  // Extract the JSON object if Lazarus adds text around it.
+  const first = cleaned.indexOf('{');
+  const last = cleaned.lastIndexOf('}');
 
-    if (!Array.isArray(data.cards)) {
-      throw new Error('No flashcards were returned.');
-    }
-
-    const cards = data.cards
-      .filter(c => c && typeof c.front === 'string' && typeof c.back === 'string')
-      .slice(0, 20);
-
-    if (!cards.length) throw new Error('No valid flashcards were returned.');
-
-    return cards;
+  if (first !== -1 && last > first) {
+    cleaned = cleaned.slice(first, last + 1);
   }
+
+  const data = JSON.parse(cleaned);
+
+  if (!Array.isArray(data.cards)) {
+    throw new Error('No flashcards were returned.');
+  }
+
+  const cards = data.cards
+    .filter(card =>
+      card &&
+      typeof card.front === 'string' &&
+      typeof card.back === 'string' &&
+      card.front.trim() &&
+      card.back.trim()
+    )
+    .map(card => ({
+      front: card.front.trim(),
+      back: card.back.trim()
+    }))
+    .slice(0, 20);
+
+  if (!cards.length) {
+    throw new Error('No valid flashcards were returned.');
+  }
+
+  return cards;
+}
 
   /* ---------- Interactive quiz ---------- */
 
@@ -2696,16 +2717,26 @@ updateBtns();
           $('studyResult').replaceChildren();
           throw new Error('The quiz could not be formatted. Please try generating it again.');
         }
-      } else if (mode === 'flashcards') {
-        showCards(parseCards(answer));
-        $('studyStatus').textContent =
-          'Your flashcards are ready. Tap any card to reveal its answer.';
+      } else 
+      if (mode === 'flashcards') {
+        const cards = parseCards(answer);
+
+        if (!Array.isArray(cards) || cards.length === 0) {
+          $('studyStatus').textContent =
+            'I could not create flashcards. Try again with a shorter, clearer topic.';
+          $('studyResult').innerHTML = '';
+        } else {
+          showCards(cards);
+          $('studyStatus').textContent =
+            `Your ${cards.length} flashcards are ready! Tap any card to reveal its answer.`;
+        }
       } else {
         $('studyStatus').textContent = 'Ready. Keep practising!';
       }
     } catch (error) {
       if (error.name !== 'AbortError') {
-        $('studyStatus').textContent = error.message || 'Something went wrong.';
+        $('studyStatus').textContent =
+          error.message || 'Something went wrong. Please try again.';
       }
     } finally {
       studyBusy = false;
