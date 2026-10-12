@@ -2239,81 +2239,76 @@ updateBtns();
 
   /* ---------- Flashcards ---------- */
 
-  function showCards(cards) {
-    const container = $('studyFlashcards');
-    container.replaceChildren();
-    studyCards = cards;
-
-    cards.forEach((card, index) => {
-      let showingAnswer = false;
-
-      const b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'study-flashcard';
-
-      function draw() {
-        b.replaceChildren();
-
-        const small = document.createElement('small');
-        small.textContent = showingAnswer
-          ? 'ANSWER · TAP TO FLIP BACK'
-          : 'CARD ' + (index + 1) + ' · TAP TO REVEAL';
-
-        const content = document.createElement('span');
-        content.textContent = showingAnswer ? card.back : card.front;
-
-        b.append(small, content);
-      }
-
-      b.addEventListener('click', () => {
-        showingAnswer = !showingAnswer;
-        draw();
-      });
-
-      draw();
-      container.appendChild(b);
-    });
-  }
-
   
-function parseCards(text) {
-  let cleaned = text.trim()
-    .replace(/```(?:json)?/gi, '')
-    .trim();
+function showCards(cards) {
+  const container = $('studyFlashcards');
 
-  // Extract the JSON object if Lazarus adds text around it.
-  const first = cleaned.indexOf('{');
-  const last = cleaned.lastIndexOf('}');
-
-  if (first !== -1 && last > first) {
-    cleaned = cleaned.slice(first, last + 1);
+  if (!container) {
+    $('studyStatus').textContent =
+      'Error: the flashcard display container was not found.';
+    return;
   }
 
-  const data = JSON.parse(cleaned);
-
-  if (!Array.isArray(data.cards)) {
-    throw new Error('No flashcards were returned.');
+  if (!Array.isArray(cards) || cards.length === 0) {
+    $('studyStatus').textContent =
+      'No flashcards were available to display.';
+    return;
   }
 
-  const cards = data.cards
-    .filter(card =>
-      card &&
-      typeof card.front === 'string' &&
-      typeof card.back === 'string' &&
-      card.front.trim() &&
-      card.back.trim()
-    )
-    .map(card => ({
-      front: card.front.trim(),
-      back: card.back.trim()
-    }))
-    .slice(0, 20);
+  // Clear old cards and make the display visible.
+  container.replaceChildren();
+  container.style.display = 'grid';
+  container.style.visibility = 'visible';
+  container.style.opacity = '1';
 
-  if (!cards.length) {
-    throw new Error('No valid flashcards were returned.');
-  }
+  studyCards = cards;
 
-  return cards;
+  cards.forEach((card, index) => {
+    let showingAnswer = false;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'study-flashcard';
+
+    // Ensure the cards are visible even if older CSS hides buttons.
+    button.style.display = 'flex';
+    button.style.visibility = 'visible';
+    button.style.opacity = '1';
+    button.style.width = '100%';
+    button.style.minHeight = '120px';
+    button.style.padding = '20px';
+    button.style.flexDirection = 'column';
+    button.style.justifyContent = 'center';
+    button.style.gap = '12px';
+    button.style.cursor = 'pointer';
+
+    const draw = () => {
+      button.replaceChildren();
+
+      const label = document.createElement('small');
+      label.textContent = showingAnswer
+        ? 'ANSWER · TAP TO FLIP BACK'
+        : `CARD ${index + 1} · TAP TO REVEAL`;
+
+      const content = document.createElement('span');
+      content.textContent = showingAnswer
+        ? card.back
+        : card.front;
+
+      button.append(label, content);
+    };
+
+    button.addEventListener('click', () => {
+      showingAnswer = !showingAnswer;
+      draw();
+    });
+
+    draw();
+    container.appendChild(button);
+  });
+
+  $('studyStatus').textContent =
+    `${cards.length} flashcards displayed. Tap a card to reveal its answer.`;
 }
 
   /* ---------- Interactive quiz ---------- */
