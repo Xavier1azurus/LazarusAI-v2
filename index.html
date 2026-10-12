@@ -2239,6 +2239,54 @@ updateBtns();
 
   /* ---------- Flashcards ---------- */
 
+function parseCards(text) {
+  let cleaned = text.trim()
+    .replace(/```(?:json)?/gi, '')
+    .trim();
+
+  // Extract JSON if Lazarus adds text around it.
+  const first = cleaned.indexOf('{');
+  const last = cleaned.lastIndexOf('}');
+
+  if (first === -1 || last <= first) {
+    throw new Error('Lazarus did not return valid flashcard data. Please try again.');
+  }
+
+  cleaned = cleaned.slice(first, last + 1);
+
+  let data;
+
+  try {
+    data = JSON.parse(cleaned);
+  } catch {
+    throw new Error('The flashcard data was invalid. Please generate the cards again.');
+  }
+
+  if (!Array.isArray(data.cards)) {
+    throw new Error('No flashcards were returned. Please try again.');
+  }
+
+  const cards = data.cards
+    .filter(card =>
+      card &&
+      typeof card.front === 'string' &&
+      typeof card.back === 'string' &&
+      card.front.trim() &&
+      card.back.trim()
+    )
+    .map(card => ({
+      front: card.front.trim(),
+      back: card.back.trim()
+    }))
+    .slice(0, 20);
+
+  if (!cards.length) {
+    throw new Error('No valid flashcards were returned. Please try again.');
+  }
+
+  return cards;
+}
+
   
 function showCards(cards) {
   const container = $('studyFlashcards');
