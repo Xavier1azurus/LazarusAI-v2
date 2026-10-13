@@ -1,4 +1,3 @@
-
 import express from "express";
 import cors from "cors";
 import { createClient } from "@supabase/supabase-js";
@@ -111,6 +110,12 @@ app.post("/api/chat", requireUser, async (req, res) => {
     ? "qwen/qwen3.8-27b"
     : "openai/gpt-oss-120b";
 
+  // Code Mode asks for a longer reply (max_tokens). Default 1500, never above 4000.
+  const requestedTokens = Number(req.body?.max_tokens);
+  const maxTokens = Number.isFinite(requestedTokens) && requestedTokens > 0
+    ? Math.min(Math.floor(requestedTokens), 4000)
+    : 1500;
+
   const controller = new AbortController();
 
   res.on("close", () => {
@@ -131,7 +136,7 @@ app.post("/api/chat", requireUser, async (req, res) => {
           model,
           messages,
           temperature: 0.7,
-          max_completion_tokens: 1500,
+          max_completion_tokens: maxTokens,
           stream: true
         })
       }
