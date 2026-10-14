@@ -1344,27 +1344,6 @@ async function send(regenIndex = null) {
 ctrl = new AbortController();
 setBusy(true);
 
-const galaxy = document.getElementById('lazarusGalaxy');
-
-if (galaxy) {
-    galaxy.hidden = false;
-    galaxy.classList.remove('is-transforming');
-}
-setBusy(true);
-
-const galaxy = $('lazarusGalaxy');
-
-if (galaxy) {
-  galaxy.classList.remove('is-transforming');
-  galaxy.hidden = false;
-}
-
-  const tok = speakTok, st = { i: 0 };
-  try {
-
-    if (user.guest) {
-      throw new Error("Please sign in to use Lazarus AI chat.");
-    }
 
     // Refresh/check the Supabase session before calling Render.
     const sessionCheck = await sb("/auth/v1/user");
