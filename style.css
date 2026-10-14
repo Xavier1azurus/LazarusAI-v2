@@ -93,3 +93,176 @@ button:active:not(:disabled) {
         transform: translateY(0) scale(1);
     }
 }
+
+/* ===== LAZARUS GALAXY ===== */
+
+.galaxy-thinking {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 4px;
+  margin: 8px 0;
+}
+
+.galaxy-thinking[hidden] {
+  display: none !important;
+}
+
+.galaxy-animation {
+  position: relative;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
+  isolation: isolate;
+}
+
+.galaxy-haze,
+.galaxy-spiral,
+.galaxy-core,
+.galaxy-burst {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+}
+
+.galaxy-haze {
+  background: radial-gradient(
+    circle,
+    rgba(132, 75, 190, 0.32),
+    rgba(63, 24, 94, 0.16) 48%,
+    transparent 72%
+  );
+  animation: galaxyBreathe 2.2s ease-in-out infinite;
+}
+
+.galaxy-spiral {
+  inset: 10px 3px;
+  border: 1px solid transparent;
+  border-top-color: #8050a9;
+  border-right-color: #53316f;
+  border-bottom-color: #372044;
+  border-radius: 50%;
+  box-shadow: 0 0 8px rgba(111, 58, 153, 0.18);
+}
+
+.spiral-one {
+  animation: galaxyRotate 3s linear infinite;
+  transform: rotate(-25deg);
+}
+
+.spiral-two {
+  inset: 16px 5px;
+  border-top-color: #b28ad5;
+  border-left-color: #573374;
+  animation: galaxyRotateReverse 2.2s linear infinite;
+}
+
+.galaxy-core {
+  inset: 25px;
+  background: radial-gradient(
+    circle,
+    #e6d3ff 0%,
+    #a777d1 25%,
+    #593078 62%,
+    transparent 100%
+  );
+  box-shadow: 0 0 12px rgba(150, 96, 204, 0.5);
+  animation: galaxyBreathe 1.5s ease-in-out infinite;
+}
+
+.galaxy-burst {
+  inset: 25px;
+  opacity: 0;
+  background: radial-gradient(
+    circle,
+    #ffffff 0%,
+    #f1e5ff 16%,
+    #c7a1ff 36%,
+    rgba(135, 74, 207, 0.18) 66%,
+    transparent 75%
+  );
+  pointer-events: none;
+}
+
+.galaxy-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  color: #d9c8ec;
+  font-size: 13px;
+}
+
+.galaxy-subtitle {
+  color: #887596;
+  font-size: 12px;
+}
+
+.galaxy-thinking.is-transforming .galaxy-spiral {
+  animation: galaxyCollapse 0.42s ease-in forwards;
+}
+
+.galaxy-thinking.is-transforming .galaxy-core {
+  animation: galaxyIgnite 0.55s ease-out forwards;
+}
+
+.galaxy-thinking.is-transforming .galaxy-burst {
+  animation: galaxyFlash 0.8s ease-out forwards;
+}
+
+.galaxy-thinking.is-transforming .galaxy-haze {
+  animation: galaxyVanish 0.8s ease-out forwards;
+}
+
+.galaxy-thinking.is-transforming .galaxy-subtitle {
+  color: #e4d1ff;
+}
+
+@keyframes galaxyRotate {
+  to { transform: rotate(335deg); }
+}
+
+@keyframes galaxyRotateReverse {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes galaxyBreathe {
+  0%, 100% { transform: scale(0.92); opacity: 0.72; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+@keyframes galaxyCollapse {
+  to {
+    transform: scale(0.08) rotate(180deg);
+    opacity: 0;
+  }
+}
+
+@keyframes galaxyIgnite {
+  0% { transform: scale(1); filter: brightness(1); }
+  35% { transform: scale(1.8); filter: brightness(2.8); }
+  100% { transform: scale(0.1); opacity: 0; }
+}
+
+@keyframes galaxyFlash {
+  0% { opacity: 0; transform: scale(0.1); }
+  28% { opacity: 1; transform: scale(1.35); }
+  60% { opacity: 0.75; transform: scale(1.05); }
+  100% { opacity: 0; transform: scale(1.8); }
+}
+
+@keyframes galaxyVanish {
+  to { opacity: 0; transform: scale(1.3); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .galaxy-thinking:not(.is-transforming) * {
+    animation: none !important;
+  }
+
+  .galaxy-thinking.is-transforming .galaxy-spiral,
+  .galaxy-thinking.is-transforming .galaxy-core,
+  .galaxy-thinking.is-transforming .galaxy-burst,
+  .galaxy-thinking.is-transforming .galaxy-haze {
+    animation-duration: 0.15s;
+  }
+}
