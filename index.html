@@ -1340,7 +1340,17 @@ async function send(regenIndex = null) {
   }
   renderThread(); renderList();
   const out = bubble('ai', '', null, cur.messages.length); let acc = '';
-  ctrl = new AbortController(); setBusy(true);
+
+ctrl = new AbortController();
+setBusy(true);
+
+const galaxy = $('lazarusGalaxy');
+
+if (galaxy) {
+  galaxy.classList.remove('is-transforming');
+  galaxy.hidden = false;
+}
+
   const tok = speakTok, st = { i: 0 };
   try {
 
@@ -1411,7 +1421,26 @@ async function send(regenIndex = null) {
   if (!acc) { out.innerHTML = '<p style="color:var(--muted)">' + (out.dataset.failed ? 'No response received.' : 'Stopped.') + '</p>'; }
   else { out._act.hidden = false; cur.messages.push({ role:'assistant', content:acc }); out._act.querySelector('.regen').dataset.index = cur.messages.length - 1; }
   if (handsFree && acc) feed(st, cleanText(acc), true, tok);
-  ctrl = null; setBusy(false); renderList();
+  
+ctrl = null;
+setBusy(false);
+renderList();
+
+if (galaxy) {
+  if (acc) {
+    galaxy.classList.remove('is-transforming');
+    void galaxy.offsetWidth;
+    galaxy.classList.add('is-transforming');
+
+    setTimeout(() => {
+      galaxy.hidden = true;
+      galaxy.classList.remove('is-transforming');
+    }, 850);
+  } else {
+    galaxy.hidden = true;
+  }
+}
+
   try { await Store.save(cur); } catch (e) { console.error(e); }
   if (handsFree && acc && pending === 0 && tok === speakTok) afterSpeak();
 }
