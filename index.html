@@ -1339,77 +1339,168 @@ async function send(regenIndex = null) {
     input.value = ''; input.style.height = 'auto';
   }
   renderThread(); renderList();
-  const out = bubble('ai', '', null, cur.messages.length); let acc = '';
+  
+const out = bubble('ai', '', null, cur.messages.length);
+let acc = '';
 
 ctrl = new AbortController();
 setBusy(true);
 
+const tok = speakTok;
+const st = { i: 0 };
 
-    // Refresh/check the Supabase session before calling Render.
+try {
+    if (user.guest) {
+        throw new Error("Please sign in to use Lazarus AI chat.");
+    }
+
+    // Check the Supabase session.
     const sessionCheck = await sb("/auth/v1/user");
+
     if (!sessionCheck.ok) {
-      throw new Error("Your session expired. Please sign in again.");
+        throw new Error("Your session expired. Please sign in again.");
     }
 
     const session = LS.get("lz_session");
+
     if (!session?.access_token) {
-      throw new Error("Please sign in again to continue.");
+        throw new Error("Please sign in again to continue.");
     }
 
     const r = await fetch(
-      "https://lazarus-backend-75ik.onrender.com/api/chat",
-      {
-        method: "POST",
-        signal: ctrl.signal,
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer " + session.access_token
-        },
-        body: JSON.stringify({
-          messages: apiMessages()
-        })
-      }
+        "https://lazarus-backend-75ik.onrender.com/api/chat",
+        {
+            method: "POST",
+            signal: ctrl.signal,
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": "Bearer " + session.access_token
+            },
+            body: JSON.stringify({
+                messages: apiMessages()
+            })
+        }
     );
 
-    const rd = r.body.getReader(), dec = new TextDecoder(); let buf = '';
+    if (!r.ok) {
+        throw new Error("Chat request failed with status " + r.status);
+    }
+
+    if (!r.body) {
+        throw new Error("The server did not return a response stream.");
+    }
+
+    const rd = r.body.getReader();
+    const dec = new TextDecoder();
+    let buf = '';
+
     const consumeSSE = line => {
-      if (!line.startsWith('data:')) return false;
-      const payload = line.slice(5).trim();
-      if (!payload || payload === '[DONE]') return payload === '[DONE]';
-      try {
-        const data = JSON.parse(payload);
-        const delta = data?.choices?.[0]?.delta?.content;
-        if (typeof delta === 'string' && delta) {
-          acc += delta; out._raw = acc; renderMarkdown(out, acc);
-          $('chatView').scrollTop = $('chatView').scrollHeight;
-          if (handsFree) feed(st, cleanText(acc), false, tok);
+        if (!line.startsWith('data:')) return false;
+
+        const payload = line.slice(5).trim();
+
+        if (!payload || payload === '[DONE]') {
+            return payload === '[DONE]';
         }
-      } catch (err) {}
-      return false;
+
+        try {
+            const data = JSON.parse(payload);
+            const delta = data?.choices?.[0]?.delta?.content;
+
+            if (typeof delta === 'string' && delta) {
+                acc += delta;
+                out._raw = acc;
+                renderMarkdown(out, acc);
+
+                $('chatView').scrollTop =
+                    $('chatView').scrollHeight;
+
+                if (handsFree) {
+                    feed(st, cleanText(acc), false, tok);
+                }
+            }
+        } catch (err) {
+            console.warn("Could not parse chat stream data:", err);
+        }
+
+        return false;
     };
+
     let streamDone = false;
+
     while (!streamDone) {
-      const { done, value } = await rd.read();
-      if (done) break;
-      buf += dec.decode(value, { stream:true });
-      const lines = buf.split(/\r?\n/); buf = lines.pop() || '';
-      for (const line of lines) if (consumeSSE(line)) { streamDone = true; break; }
+        const { done, value } = await rd.read();
+
+        if (done) break;
+
+        buf += dec.decode(value, { stream: true });
+
+        const lines = buf.split(/\r?\n/);
+        buf = lines.pop() || '';
+
+        for (const line of lines) {
+            if (consumeSSE(line)) {
+                streamDone = true;
+                break;
+            }
+        }
     }
+
     buf += dec.decode();
-    if (buf.trim()) consumeSSE(buf.trim());
-  } catch (e) {
-    if (e.name !== 'AbortError') {
-      const msg = e.message || 'Unknown error';
-      out.dataset.failed = 'true';
-      const notice = document.createElement('p'); notice.className = 'error-note'; notice.textContent = 'Request failed: ' + msg;
-      out.appendChild(notice);
+
+    if (buf.trim()) {
+        consumeSSE(buf.trim());
     }
-  }
-  if (!acc) { out.innerHTML = '<p style="color:var(--muted)">' + (out.dataset.failed ? 'No response received.' : 'Stopped.') + '</p>'; }
-  else { out._act.hidden = false; cur.messages.push({ role:'assistant', content:acc }); out._act.querySelector('.regen').dataset.index = cur.messages.length - 1; }
-  if (handsFree && acc) feed(st, cleanText(acc), true, tok);
-  
+
+} catch (e) {
+    if (e.name !== 'AbortError') {
+        const msg = e.message || 'Unknown error';
+
+        out.dataset.failed = 'true';
+
+        const notice = document.createElement('p');
+        notice.className = 'error-note';
+        notice.textContent = 'Request failed: ' + msg;
+
+        out.appendChild(notice);
+    }
+}
+
+if (!acc) {
+    out.innerHTML =
+        '<p style="color:var(--muted)">' +
+        (out.dataset.failed ? 'No response received.' : 'Stopped.') +
+        '</p>';
+} else {
+    out._act.hidden = false;
+
+    cur.messages.push({
+        role: 'assistant',
+        content: acc
+    });
+
+    out._act.querySelector('.regen').dataset.index =
+        cur.messages.length - 1;
+}
+
+if (handsFree && acc) {
+    feed(st, cleanText(acc), true, tok);
+}
+
 ctrl = null;
+setBusy(false);
+renderList();
+
+try {
+    await Store.save(cur);
+} catch (e) {
+    console.error("Could not save chat:", e);
+}
+
+if (handsFree && acc && pending === 0 && tok === speakTok) {
+    afterSpeak();
+}
+
 setBusy(false);
 renderList();
 
