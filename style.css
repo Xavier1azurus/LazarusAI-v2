@@ -266,3 +266,107 @@ button:active:not(:disabled) {
     animation-duration: 0.15s;
   }
 }
+
+.galaxy-thinking {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px;
+    color: #d9c2ff;
+}
+
+.galaxy-thinking[hidden] {
+    display: none !important;
+}
+
+.galaxy-animation {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #9b5de5 0%, #47216b 25%, #160d25 60%, transparent 75%);
+    animation: galaxy-spin 3s linear infinite, galaxy-pulse 1.8s ease-in-out infinite;
+}
+
+.galaxy-spiral {
+    position: absolute;
+    inset: 12px 3px;
+    border: 2px solid transparent;
+    border-top-color: #b68aff;
+    border-right-color: #7141a5;
+    border-bottom-color: #492765;
+    border-radius: 50%;
+}
+
+.spiral-one {
+    animation: galaxy-spin 2s linear infinite;
+}
+
+.spiral-two {
+    inset: 19px 7px;
+    border-top-color: #f0dfff;
+    border-left-color: #8854c7;
+    animation: galaxy-reverse 1.5s linear infinite;
+}
+
+.galaxy-haze {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: radial-gradient(circle, #a76bff55, transparent 70%);
+}
+
+.galaxy-core {
+    position: absolute;
+    inset: 26px;
+    border-radius: 50%;
+    background: #e5caff;
+    box-shadow: 0 0 12px #b47aff;
+}
+
+.galaxy-burst {
+    position: absolute;
+    inset: 20px;
+    border-radius: 50%;
+    opacity: 0;
+    background: radial-gradient(circle, white, #d5a8ff 35%, transparent 75%);
+}
+
+.galaxy-thinking.is-transforming .galaxy-animation {
+    animation: galaxy-finish 0.8s ease-out forwards;
+}
+
+.galaxy-thinking.is-transforming .galaxy-burst {
+    animation: galaxy-flash 0.8s ease-out forwards;
+}
+
+.galaxy-thinking.is-transforming .galaxy-spiral {
+    animation: galaxy-collapse 0.8s ease-out forwards;
+}
+
+@keyframes galaxy-spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes galaxy-reverse {
+    to { transform: rotate(-360deg); }
+}
+
+@keyframes galaxy-pulse {
+    50% { filter: brightness(1.5); }
+}
+
+@keyframes galaxy-finish {
+    35% { filter: brightness(3); transform: scale(1.3); }
+    100% { opacity: 0; transform: scale(0.3); }
+}
+
+@keyframes galaxy-flash {
+    30% { opacity: 1; transform: scale(1.8); }
+    100% { opacity: 0; transform: scale(2.5); }
+}
+
+@keyframes galaxy-collapse {
+    100% { opacity: 0; transform: scale(0.1) rotate(180deg); }
+}
