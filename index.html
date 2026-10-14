@@ -1344,6 +1344,14 @@ async function send(regenIndex = null) {
 ctrl = new AbortController();
 setBusy(true);
 
+const galaxy = document.getElementById('lazarusGalaxy');
+
+if (galaxy) {
+    galaxy.hidden = false;
+    galaxy.classList.remove('is-transforming');
+}
+setBusy(true);
+
 const galaxy = $('lazarusGalaxy');
 
 if (galaxy) {
@@ -1423,6 +1431,26 @@ if (galaxy) {
   if (handsFree && acc) feed(st, cleanText(acc), true, tok);
   
 ctrl = null;
+setBusy(false);
+renderList();
+
+const galaxyEffect = document.getElementById('lazarusGalaxy');
+
+if (galaxyEffect) {
+    if (acc) {
+        galaxyEffect.classList.remove('is-transforming');
+        void galaxyEffect.offsetWidth;
+        galaxyEffect.classList.add('is-transforming');
+
+        setTimeout(() => {
+            galaxyEffect.hidden = true;
+            galaxyEffect.classList.remove('is-transforming');
+        }, 850);
+    } else {
+        galaxyEffect.hidden = true;
+        galaxyEffect.classList.remove('is-transforming');
+    }
+}
 setBusy(false);
 renderList();
 
