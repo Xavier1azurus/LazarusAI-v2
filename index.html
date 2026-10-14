@@ -645,28 +645,28 @@ button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-
 .brand-icon { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 0; }
 .welcome-logo { width: 76px; height: 76px; margin: 0 auto 18px; }
 
-/* ===== Code Mode + shared code block styling ===== */
+/* ===== shared tweaks ===== */
 .new-chat-btn .nav-icon { display: grid; place-items: center; }
-#codeView { flex: 1; min-height: 0; overflow-y: auto; padding: 28px 18px; background: var(--bg); }
-.code-row { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-.code-select { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 7px 10px; color: var(--text); font: inherit; font-size: 14px; }
-.code-select:focus { outline: none; border-color: var(--accent); }
-.code-source { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.55; min-height: 170px; white-space: pre; overflow: auto; tab-size: 2; }
-
 .study-result pre, .message-content pre { background: #1b1b1a; color: #e6e6e3; border: 1px solid #3b3a37; }
 .study-result pre { border-radius: 12px; padding: 14px; overflow-x: auto; font-size: 13px; line-height: 1.55; }
 .study-result pre code { background: transparent; padding: 0; font-size: inherit; font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .study-result pre code.hljs, .message-content pre code.hljs { background: transparent; padding: 0; }
 .study-result :not(pre) > code { background: var(--code); padding: 2px 6px; border-radius: 6px; border: 1px solid var(--border); font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .9em; }
 
-.code-block { margin: 16px 0; border: 1px solid #3b3a37; border-radius: 12px; overflow: hidden; background: #1b1b1a; }
-.code-block pre { margin: 0; border: 0; border-radius: 0; }
-.code-bar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 5px 6px 5px 14px; border-bottom: 1px solid #3b3a37; color: #a8a7a1; font-size: 12.5px; }
-.code-actions { display: flex; gap: 2px; }
-.code-bar button { background: none; border: 0; color: #a8a7a1; padding: 4px 10px; border-radius: 8px; font-size: 12.5px; }
-.code-bar button:hover { background: #2a2a28; color: #ececea; }
-.code-preview { display: block; width: 100%; height: 360px; border: 0; border-top: 1px solid #3b3a37; background: #fff; }
-@media (max-width: 480px) { #codeView { padding: 20px 12px; } }
+/* ===== "You need an account" popup ===== */
+#needAcc { position: fixed; inset: 0; background: rgba(0,0,0,.55); display: grid; place-items: center; z-index: 50; padding: 20px; backdrop-filter: blur(2px); }
+#needAcc .card { background: var(--panel); border: 1px solid var(--border); border-radius: 22px; padding: 28px 24px 18px; width: 100%; max-width: 400px; text-align: center; box-shadow: var(--shadow); display: flex; flex-direction: column; align-items: center; gap: 10px; animation: appear .16s ease-out; }
+.na-mark { width: 48px; height: 48px; border-radius: 50%; display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+#needAcc h2 { margin: 6px 0 0; font: 500 24px/1.25 Newsreader, Georgia, serif; }
+#needAcc p { margin: 0 0 6px; color: var(--muted); font-size: 14.5px; line-height: 1.55; }
+.na-actions { display: flex; flex-direction: column; gap: 8px; width: 100%; margin-top: 6px; }
+.na-primary, .na-secondary { border-radius: 12px; padding: 11px; font-weight: 600; }
+.na-primary { background: var(--accent); color: var(--on-accent); border: 0; }
+.na-primary:hover { background: var(--accent-strong); }
+.na-secondary { background: transparent; color: var(--text); border: 1px solid var(--border); }
+.na-secondary:hover { background: var(--panel-hover); }
+.na-later { background: none; border: 0; color: var(--muted); font-size: 13px; padding: 6px; }
+.na-later:hover { color: var(--text); }
 </style>
 </head>
 
@@ -706,6 +706,22 @@ button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-
   </div>
 </div>
 
+<!-- ACCOUNT REQUIRED POPUP -->
+<div id="needAcc" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="naTitle">
+    <div class="na-mark">
+      <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </div>
+    <h2 id="naTitle">You need an account to use Lazarus</h2>
+    <p>Create a free account or sign in to chat, use Study Mode and keep your chats saved across devices.</p>
+    <div class="na-actions">
+      <button class="na-primary" id="naCreate">Create account</button>
+      <button class="na-secondary" id="naSignin">Sign in</button>
+    </div>
+    <button class="na-later" id="naClose">Not now</button>
+  </div>
+</div>
+
 <div class="app">
     <aside id="sidebar" class="sidebar">
         <button class="brand" id="sidebarToggle" title="Expand or collapse sidebar" aria-label="Toggle sidebar">
@@ -721,11 +737,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-
         <button class="new-chat-btn" id="studyModeButton" title="Study Mode">
             <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19.5v-15A2.5 2.5 0 0 1 6.5 2H19a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1H6.5a1 1 0 0 1 0-5H20"/></svg></span>
             <span class="nav-label">Study Mode</span>
-        </button>
-
-        <button class="new-chat-btn" id="codeModeButton" title="Code Mode">
-            <span class="nav-icon"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg></span>
-            <span class="nav-label">Code Mode</span>
         </button>
 
         <div class="history-heading">Recent chats</div>
@@ -810,47 +821,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-
             </div>
         </section>
 
-        <!-- CODE MODE -->
-        <section id="codeView" hidden>
-            <div class="study-inner">
-                <header class="study-heading">
-                    <h1>Code Mode</h1>
-                    <p>Write, debug, explain and review code, with syntax highlighting, copy buttons and a live preview for web pages.</p>
-                </header>
-
-                <div class="study-tabs" role="tablist" aria-label="Code tools">
-                    <button class="study-tab active" data-code-mode="write" role="tab" aria-selected="true">Write</button>
-                    <button class="study-tab" data-code-mode="debug" role="tab" aria-selected="false">Debug</button>
-                    <button class="study-tab" data-code-mode="explain" role="tab" aria-selected="false">Explain</button>
-                    <button class="study-tab" data-code-mode="review" role="tab" aria-selected="false">Review</button>
-                </div>
-
-                <div class="study-panel">
-                    <h2 id="codeTitle">Write code</h2>
-                    <p class="study-description" id="codeDescription">Describe what you want and Lazarus will write complete, working code.</p>
-
-                    <div class="code-row">
-                        <label for="codeLang">Language</label>
-                        <select id="codeLang" class="code-select"><option value="">Auto-detect</option><option value="JavaScript">JavaScript</option><option value="TypeScript">TypeScript</option><option value="Python">Python</option><option value="HTML">HTML</option><option value="CSS">CSS</option><option value="Java">Java</option><option value="C">C</option><option value="C++">C++</option><option value="C#">C#</option><option value="Go">Go</option><option value="Rust">Rust</option><option value="PHP">PHP</option><option value="Swift">Swift</option><option value="Kotlin">Kotlin</option><option value="SQL">SQL</option><option value="Bash">Bash</option></select>
-                    </div>
-
-                    <label for="codeRequest" id="codeRequestLabel">What should it do?</label>
-                    <textarea id="codeRequest" class="study-field" placeholder="Describe what you want..."></textarea>
-
-                    <div id="codeSourceArea" hidden>
-                        <label for="codeSource">Your code</label>
-                        <textarea id="codeSource" class="study-field code-source" spellcheck="false" placeholder="Paste your code here..."></textarea>
-                    </div>
-
-                    <button class="study-primary" id="codeGo">Generate code</button>
-
-                    <p id="codeStatus" class="study-status" role="status" aria-live="polite"></p>
-
-                    <div id="codeResult" class="study-result"></div>
-                </div>
-            </div>
-        </section>
-
         <!-- CHAT COMPOSER -->
         <footer id="composerWrap" class="composer-wrap">
             <div id="thumbs" hidden></div>
@@ -878,7 +848,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-
                     aria-label="Message Lazarus"
                 ></textarea>
 
-                <button class="ib" id="voiceOpen" title="Open Voice Mode" aria-label="Open Voice Mode">✦</button>
 
                 <button class="ib" id="mic" title="Dictate message" aria-label="Dictate message">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
@@ -922,7 +891,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-
                     aria-label="Message Lazarus"
                 ></textarea>
 
-                <button class="ib" id="voiceOpen" title="Open Voice Mode" aria-label="Open Voice Mode">✦</button>
 
                 <button class="ib" id="mic" title="Speak your message" aria-label="Speak your message">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -948,7 +916,6 @@ button:focus-visible, textarea:focus-visible, select:focus-visible, input:focus-
                 <input type="file" id="file" accept="image/*" multiple hidden>
                 <textarea id="messageInput" rows="1" maxlength="12000" placeholder="Message Lazarus..." aria-label="Message Lazarus"></textarea>
                 
-<button class="ib" id="voiceOpen" title="Open Voice Mode" aria-label="Open Voice Mode">✦</button>
 
                 <button class="ib" id="mic" title="Speak your message" aria-label="Speak your message"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
                 <button class="send-button" id="sendButton" aria-label="Send">↑</button>
@@ -1336,6 +1303,7 @@ function apiMessages() {
 
 async function send(regenIndex = null) {
   if (ctrl) { ctrl.abort(); stopSpeak(); return; }
+  if (user && user.guest && ($('messageInput').value.trim() || pend.length || Number.isInteger(regenIndex))) { showAccountPopup(); return; }
   stopSpeak(); if (listening) stopListen(true);
   handsFree = micSend; micSend = false;
   const regenerating = Number.isInteger(regenIndex);
@@ -1479,6 +1447,7 @@ mq.addEventListener('change', () => { if (LS.get('lz_theme', 'dark') === 'system
 
 async function enter(u) {
   user = u; $('auth').hidden = true;
+  $('messageInput').placeholder = u.guest ? 'Sign in to message Lazarus...' : 'Message Lazarus...';
   prefName = await loadName(); refreshWho();
   $('out').querySelector('.nav-label').textContent = u.guest ? 'Sign in' : 'Sign out';
   try { chats = await Store.load(); } catch (e) { chats = []; }
@@ -2365,8 +2334,8 @@ updateBtns();
     if (studyBusy) return;
 
     if (!user || user.guest) {
-      $('studyStatus').textContent = 'Please sign in to use Study Mode AI.';
-      $('auth').hidden = false;
+      $('studyStatus').textContent = '';
+      showAccountPopup();
       return;
     }
 
@@ -2545,379 +2514,42 @@ updateBtns();
 })();
 
 
-/* ===== LAZARUS CODE MODE ===== */
+/* ===== ACCOUNT REQUIRED POPUP ===== */
+function showAccountPopup() {
+  $('needAcc').hidden = false;
+  $('naCreate').focus();
+}
+
 (() => {
-  const view = $('codeView');
-  const chatView = $('chatView');
+  const pop = $('needAcc');
+  const close = () => { pop.hidden = true; };
+
+  const openAuth = wantSignup => {
+    close();
+    if (signup !== wantSignup) $('sw').click();
+    $('auth').hidden = false;
+    (wantSignup ? $('un') : $('em')).focus();
+  };
+
+  $('naCreate').addEventListener('click', () => openAuth(true));
+  $('naSignin').addEventListener('click', () => openAuth(false));
+  $('naClose').addEventListener('click', close);
+  pop.addEventListener('click', e => { if (e.target === pop) close(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') close(); });
+
+  // New chat / picking a chat leaves Study Mode and returns to the chat screen.
   const studyView = $('studyView');
-  const composer = $('composerWrap');
-  const button = $('codeModeButton');
-  const tabs = [...document.querySelectorAll('[data-code-mode]')];
-
-  if (!view || !button) return;
-
-  let mode = 'write';
-  let busy = false;
-  let controller = null;
-
-  const modes = {
-    write: {
-      title: 'Write code',
-      description: 'Describe what you want and Lazarus will write complete, working code.',
-      label: 'What should it do?',
-      placeholder: 'Example: A to-do list web app with dark mode that saves tasks in the browser...',
-      action: 'Generate code',
-      needsCode: false
-    },
-    debug: {
-      title: 'Debug code',
-      description: 'Paste code that is broken. Lazarus finds the cause and gives you the fix.',
-      label: 'What is going wrong? (optional)',
-      placeholder: 'Paste the error message or describe what happens...',
-      action: 'Find the bug',
-      needsCode: true
-    },
-    explain: {
-      title: 'Explain code',
-      description: 'Paste code and get a clear, step-by-step explanation of how it works.',
-      label: 'Anything specific to focus on? (optional)',
-      placeholder: 'Example: Explain the recursion part...',
-      action: 'Explain it',
-      needsCode: true
-    },
-    review: {
-      title: 'Review code',
-      description: 'Get a review covering bugs, security, performance and readability, plus a cleaner version.',
-      label: 'What should the review focus on? (optional)',
-      placeholder: 'Example: Focus on security and error handling...',
-      action: 'Review code',
-      needsCode: true
+  const leaveStudy = () => {
+    if (studyView && !studyView.hidden) {
+      studyView.hidden = true;
+      $('chatView').hidden = false;
+      $('composerWrap').hidden = false;
     }
   };
-
-  const systemFor = lang => {
-    const base = [
-      'You are Lazarus Code Mode, an expert senior software engineer working as a pair programmer.',
-      'Put every piece of code in a fenced Markdown code block with the correct language tag.',
-      'Keep prose short and useful. Never invent APIs, libraries or functions that do not exist.',
-      lang ? 'Use ' + lang + ' unless the request clearly needs something else.' : 'Pick the most suitable language if none is given.'
-    ];
-
-    if (mode === 'write') {
-      base.push(
-        'Write complete, working, well-structured code for the request, not fragments.',
-        'For a web page or small app, return ONE self-contained HTML file with inline CSS and JavaScript in a single html code block.',
-        'After the code add a few lines on how to run or use it.'
-      );
-    }
-
-    if (mode === 'debug') {
-      base.push(
-        'The user gives you broken code and maybe an error message.',
-        'Explain the root cause briefly, then give the full corrected code in one code block.',
-        'Mention any other bugs or risks you noticed in a short list.'
-      );
-    }
-
-    if (mode === 'explain') {
-      base.push(
-        'Explain what the code does step by step in plain language, in the order it runs.',
-        'Then note anything tricky, its time complexity if relevant, and possible pitfalls.'
-      );
-    }
-
-    if (mode === 'review') {
-      base.push(
-        'Review the code like a careful senior engineer.',
-        'List findings ordered by importance, covering bugs, security, performance and readability.',
-        'Finish with an improved version of the code in one code block.'
-      );
-    }
-
-    return base.join(' ');
-  };
-
-  function selectMode(next) {
-    if (!modes[next]) return;
-    if (controller) controller.abort();
-
-    mode = next;
-
-    tabs.forEach(tab => {
-      const active = tab.dataset.codeMode === mode;
-      tab.classList.toggle('active', active);
-      tab.setAttribute('aria-selected', String(active));
-    });
-
-    const m = modes[mode];
-    $('codeTitle').textContent = m.title;
-    $('codeDescription').textContent = m.description;
-    $('codeRequestLabel').textContent = m.label;
-    $('codeRequest').placeholder = m.placeholder;
-    $('codeGo').textContent = m.action;
-    $('codeSourceArea').hidden = !m.needsCode;
-    $('codeResult').replaceChildren();
-    $('codeStatus').textContent = '';
-  }
-
-  function decorate(root) {
-    root.querySelectorAll('pre').forEach(pre => {
-      if (pre.parentElement && pre.parentElement.classList.contains('code-block')) return;
-
-      const codeEl = pre.querySelector('code');
-      const text = (codeEl || pre).textContent;
-      const cls = codeEl ? [...codeEl.classList].find(c => c.startsWith('language-')) : '';
-      const lang = cls ? cls.replace('language-', '') : 'code';
-
-      const wrap = document.createElement('div');
-      wrap.className = 'code-block';
-
-      const bar = document.createElement('div');
-      bar.className = 'code-bar';
-
-      const label = document.createElement('span');
-      label.textContent = lang;
-
-      const actions = document.createElement('div');
-      actions.className = 'code-actions';
-
-      const copy = document.createElement('button');
-      copy.type = 'button';
-      copy.textContent = 'Copy';
-      copy.addEventListener('click', async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-        } catch {
-          const area = document.createElement('textarea');
-          area.value = text;
-          document.body.appendChild(area);
-          area.select();
-          document.execCommand('copy');
-          area.remove();
-        }
-        copy.textContent = 'Copied';
-        setTimeout(() => { copy.textContent = 'Copy'; }, 1500);
-      });
-      actions.appendChild(copy);
-
-      const isHtml = /^(html|htm)$/i.test(lang) || /^\s*<!doctype html|<html[\s>]/i.test(text);
-
-      if (isHtml) {
-        let frame = null;
-        const preview = document.createElement('button');
-        preview.type = 'button';
-        preview.textContent = 'Preview';
-        preview.addEventListener('click', () => {
-          if (frame) {
-            frame.remove();
-            frame = null;
-            preview.textContent = 'Preview';
-            return;
-          }
-          frame = document.createElement('iframe');
-          frame.className = 'code-preview';
-          frame.title = 'Preview';
-          // No allow-same-origin: previewed code cannot touch your login session.
-          frame.setAttribute('sandbox', 'allow-scripts allow-modals allow-forms');
-          frame.srcdoc = text;
-          wrap.appendChild(frame);
-          preview.textContent = 'Hide preview';
-        });
-        actions.prepend(preview);
-      }
-
-      bar.append(label, actions);
-      pre.replaceWith(wrap);
-      wrap.append(bar, pre);
-    });
-  }
-
-  async function run() {
-    if (busy) {
-      if (controller) controller.abort();
-      return;
-    }
-
-    const request = $('codeRequest').value.trim();
-    const code = $('codeSource').value.trim();
-    const m = modes[mode];
-    const status = $('codeStatus');
-    const result = $('codeResult');
-
-    if (m.needsCode ? !code : !request) {
-      status.textContent = m.needsCode ? 'Paste some code first.' : 'Describe what you want first.';
-      return;
-    }
-
-    if (!user || user.guest) {
-      status.textContent = 'Please sign in to use Code Mode.';
-      $('auth').hidden = false;
-      return;
-    }
-
-    const lang = $('codeLang').value;
-    let prompt = '';
-    if (lang) prompt += 'Language: ' + lang + '\n\n';
-    prompt += request || (mode === 'explain' ? 'Explain this code.' : mode === 'review' ? 'Review this code.' : 'Find and fix the problem in this code.');
-    if (code) prompt += '\n\nCode:\n```' + (lang ? lang.toLowerCase() : '') + '\n' + code + '\n```';
-
-    busy = true;
-    controller = new AbortController();
-    $('codeGo').textContent = 'Stop';
-    status.textContent = 'Lazarus is working...';
-    result.replaceChildren();
-
-    let answer = '';
-    let truncated = false;
-    let lastPaint = 0;
-
-    try {
-      const sessionCheck = await sb('/auth/v1/user');
-      if (!sessionCheck.ok) throw new Error('Your session expired. Please sign in again.');
-
-      const session = LS.get('lz_session');
-      if (!session?.access_token) throw new Error('Please sign in again to continue.');
-
-      const response = await fetch('https://lazarus-backend-75ik.onrender.com/api/chat', {
-        method: 'POST',
-        signal: controller.signal,
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + session.access_token
-        },
-        body: JSON.stringify({
-          max_tokens: 4000,
-          messages: [
-            { role: 'system', content: systemFor(lang) },
-            { role: 'user', content: prompt }
-          ]
-        })
-      });
-
-      if (!response.ok) throw new Error('The code request failed (' + response.status + ').');
-      if (!response.body) throw new Error('Your browser could not read the response.');
-
-      const reader = response.body.getReader();
-      const decoder = new TextDecoder();
-      let buffer = '';
-      let finished = false;
-
-      const consume = line => {
-        if (!line.startsWith('data:')) return false;
-        const payload = line.slice(5).trim();
-        if (!payload) return false;
-        if (payload === '[DONE]') return true;
-
-        try {
-          const data = JSON.parse(payload);
-          const choice = data?.choices?.[0];
-          const delta = choice?.delta?.content;
-
-          if (typeof delta === 'string' && delta) {
-            answer += delta;
-            const now = Date.now();
-            if (now - lastPaint > 90) {
-              renderMarkdown(result, answer);
-              lastPaint = now;
-            }
-          }
-
-          if (choice?.finish_reason === 'length') truncated = true;
-        } catch {
-          // Ignore partial chunks.
-        }
-
-        return false;
-      };
-
-      while (!finished) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-        const lines = buffer.split(/\r?\n/);
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (consume(line)) {
-            finished = true;
-            break;
-          }
-        }
-      }
-
-      buffer += decoder.decode();
-      if (buffer.trim()) consume(buffer.trim());
-
-      if (!answer.trim()) throw new Error('Lazarus returned an empty response. Please try again.');
-
-      renderMarkdown(result, answer);
-      decorate(result);
-      status.textContent = truncated
-        ? 'The answer hit the length limit. Ask for a smaller piece or use a shorter request.'
-        : 'Done.';
-    } catch (error) {
-      if (error.name === 'AbortError') {
-        if (answer.trim()) {
-          renderMarkdown(result, answer);
-          decorate(result);
-        }
-        status.textContent = 'Stopped.';
-      } else {
-        status.textContent = error.message || 'Something went wrong. Please try again.';
-      }
-    } finally {
-      busy = false;
-      controller = null;
-      $('codeGo').textContent = modes[mode].action;
-    }
-  }
-
-  function showChat() {
-    view.hidden = true;
-    if (studyView) studyView.hidden = true;
-    chatView.hidden = false;
-    composer.hidden = false;
-  }
-
-  button.addEventListener('click', () => {
-    if (!view.hidden) {
-      showChat();
-      return;
-    }
-    if (studyView) studyView.hidden = true;
-    view.hidden = false;
-    chatView.hidden = true;
-    composer.hidden = true;
-    $('sidebar').classList.remove('open');
-    $('codeRequest').focus();
-  });
-
-  // Study Mode opens itself; Code Mode just steps aside.
-  $('studyModeButton').addEventListener('click', () => { view.hidden = true; });
-
-  // New chat or picking a chat always returns to the chat screen.
-  const leaveTools = () => {
-    if (!view.hidden || (studyView && !studyView.hidden)) showChat();
-  };
-  $('newChatButton').addEventListener('click', leaveTools);
+  $('newChatButton').addEventListener('click', leaveStudy);
   $('historyList').addEventListener('click', e => {
-    if (e.target.closest('.history-open')) leaveTools();
+    if (e.target.closest('.history-open')) leaveStudy();
   });
-
-  tabs.forEach(tab => tab.addEventListener('click', () => selectMode(tab.dataset.codeMode)));
-  $('codeGo').addEventListener('click', run);
-
-  ['codeRequest', 'codeSource'].forEach(id => {
-    $(id).addEventListener('keydown', event => {
-      if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault();
-        run();
-      }
-    });
-  });
-
-  selectMode('write');
 })();
 
 </script>
