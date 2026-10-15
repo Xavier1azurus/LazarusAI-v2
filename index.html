@@ -130,7 +130,7 @@ button,textarea,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .qo:hover:not(:disabled){border-color:var(--accent);background:var(--hover)}
 .qo.ok{border-color:#4caf7d;background:#4caf7d1c}.qo.bad{border-color:#e5696f;background:#e5696f1c}
 .qx{margin:14px 0;padding:12px 14px;border:1px solid var(--border);border-radius:14px;background:var(--bg)}
-.tools{display:flex;justify-content:flex-end;margin-bottom:12px}
+.tools{display:flex;justify-content:flex-end;gap:8px;margin-bottom:12px}
 .ctog{padding:9px 15px;border:1px solid var(--border);border-radius:999px;background:var(--panel);font-size:14px}
 .ctog:hover{border-color:var(--accent)}
 .calc{position:fixed;right:20px;bottom:20px;z-index:1000;width:min(320px,calc(100vw - 24px));padding:16px;border:1px solid var(--border);border-radius:22px;background:var(--panel);box-shadow:var(--shadow)}
@@ -142,6 +142,11 @@ button,textarea,input,select{font:inherit;color:inherit}button{cursor:pointer}
 .ck button{min-height:44px;border:1px solid var(--border);border-radius:12px;background:var(--bg);font-size:16px}
 .ck button:hover{border-color:var(--accent)}
 .ck button[data-k="="]{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.calc.note{left:20px;right:auto;width:min(360px,calc(100vw - 24px))}
+.calc.note textarea{width:100%;min-height:240px;max-height:50vh;resize:vertical;padding:12px 14px;border:1px solid var(--border);border-radius:12px;background:var(--bg);font:14px/1.6 Inter,system-ui,sans-serif;color:var(--text)}
+.calc.note textarea:focus{outline:none;border-color:var(--accent)}
+.note-meta{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:var(--muted);font-size:12.5px}
+.note-meta .alt{padding:4px 8px}
 @media(max-width:760px){.sidebar{position:fixed;inset:0 auto 0 0;transform:translateX(-100%);width:280px;min-width:280px}.sidebar.open{transform:none;box-shadow:8px 0 40px #00000066}.topbar{display:flex}}
 @media(max-width:480px){.tabs{grid-template-columns:repeat(2,1fr)}}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -205,7 +210,7 @@ button,textarea,input,select{font:inherit;color:inherit}button{cursor:pointer}
         <div class="tabs" id="tabs">
           <button class="tab on" data-m="learn">Learn</button><button class="tab" data-m="quiz">Quiz</button><button class="tab" data-m="flashcards">Flashcards</button><button class="tab" data-m="homework">Homework</button>
         </div>
-        <div class="tools"><button class="ctog" id="calcToggle">Calculator</button></div>
+        <div class="tools"><button class="ctog" id="noteToggle">Notepad</button><button class="ctog" id="calcToggle">Calculator</button></div>
         <div class="sp">
           <h2 id="sTitle"></h2><p class="d" id="sDesc"></p>
           <label for="sInput">What are you studying?</label>
@@ -238,6 +243,12 @@ button,textarea,input,select{font:inherit;color:inherit}button{cursor:pointer}
   <div class="ck" id="calcKeys"></div>
 </div>
 
+<div id="notepad" class="calc note" hidden>
+  <div class="ch" id="noteHead"><strong>Notepad</strong><button id="noteClose" aria-label="Close notepad">✕</button></div>
+  <textarea id="noteText" placeholder="Jot notes here — they save automatically…" spellcheck="true"></textarea>
+  <div class="note-meta"><span id="noteStat">0 words</span><button class="alt" id="noteClear">Clear</button></div>
+</div>
+
 <script>
 "use strict";
 const CFG = {
@@ -254,7 +265,7 @@ const LS = {
 };
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : Date.now() + '-' + Math.random().toString(16).slice(2);
 
-let user = null, chats = [], cur = null, ctrl = null, signup = false, pend = [];
+let user = null, chats = [], cur = null, ctrl = null, signup = false, pend = [], guestDraft = false, noteTimer = null;
 let prefs = Object.assign({ name: '', personality: 'default', length: 'balanced', about: '', theme: 'dark' }, LS.get('lz_prefs', {}));
 
 /* Usernames are no longer reserved: anyone can use any name */
@@ -411,7 +422,6 @@ function bubble(role, text, images, idx = -1) {
   }
   m.innerHTML = '<div class="mc"><div class="t"></div><div class="act"' + (text ? '' : ' hidden') + '>' + BTNS + '</div></div>';
   const t = m.querySelector('.t'); t._raw = text; t._act = m.querySelector('.act');
-  m.querySelector('.regen').dataset.index = idx;
   if (text) t.innerHTML = md(text); else t.innerHTML = '<span class="bd" role="status" aria-label="Lazarus is thinking"><i></i><i></i><i></i></span>';
   $('messages').appendChild(m); return t;
 }
@@ -435,7 +445,12 @@ function setBusy(b) { $('sendButton').textContent = b ? '■' : '↑'; $('sendBu
 /* ---------- Voice ---------- */
 const synth = window.speechSynthesis, SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 let rec = null, listening = false, spkBtn = null;
-const clean = t => t.replace(/```[\s\S]*?(```|$)/g, ' Code block. ').replace(/[`*_#>|~]+/g, '');
+const clean = t => t
+  .replace(/```[\s\S]*?(?:```|$)/g, ' ')
+  .replace(/`([^`]+)`/g, '$1')
+  .replace(/[*_#>|~]+/g, '')
+  .replace(/\s+/g, ' ')
+  .trim();
 function stopSpeak() { if (synth) synth.cancel(); document.querySelectorAll('.spk').forEach(b => { b.classList.remove('on'); b.lastChild.textContent = 'Listen'; }); spkBtn = null; }
 function speak(t, btn) {
   const was = btn === spkBtn; stopSpeak(); if (was || !synth) return;
@@ -489,16 +504,22 @@ async function addFiles(files) {
   renderThumbs();
 }
 function apiMessages() {
-  let budget = 3;
   const recent = cur.messages.slice(-30);
-  const out = recent.map((m, i) => ({ m, imgs: m.role === 'user' && m.images?.length && recent.length - 1 - i < 8 ? m.images : [] })).reverse().map(({ m, imgs }) => {
-    if (imgs.length && budget > 0) {
-      const use = imgs.slice(0, budget); budget -= use.length;
-      return { role: 'user', content: [{ type: 'text', text: m.content || 'What is in this image?' }, ...use.map(u => ({ type: 'image_url', image_url: { url: u } }))] };
+  const cutoff = Math.max(0, recent.length - 8);
+  let budget = 3;
+  const rev = [];
+  for (let i = recent.length - 1; i >= 0; i--) {
+    const m = recent[i];
+    const attach = m.role === 'user' && m.images?.length && i >= cutoff && budget > 0;
+    if (attach) {
+      const use = m.images.slice(0, budget);
+      budget -= use.length;
+      rev.push({ role: 'user', content: [{ type: 'text', text: m.content || 'What is in this image?' }, ...use.map(u => ({ type: 'image_url', image_url: { url: u } }))] });
+    } else {
+      rev.push({ role: m.role, content: m.content || (m.images?.length ? '[photo]' : ' ') });
     }
-    return { role: m.role, content: m.content || (m.images?.length ? '[photo]' : ' ') };
-  }).reverse();
-  return [{ role: 'system', content: sysPrompt() }, ...out];
+  }
+  return [{ role: 'system', content: sysPrompt() }, ...rev.reverse()];
 }
 
 /* ---------- Send ---------- */
@@ -506,11 +527,11 @@ async function send(regenIndex = null) {
   if (ctrl) { ctrl.abort(); return; }
   const input = $('messageInput'), regen = Number.isInteger(regenIndex), text = input.value.trim();
   if (!regen && !text && !pend.length) return;
-  if (user.guest) { openAuth(); return; }
+  if (user.guest) { if (!regen) guestDraft = true; openAuth(); return; }
   stopSpeak(); if (listening) rec.stop();
   if (!cur) { cur = { id: uid(), title: 'New chat', messages: [] }; chats.unshift(cur); }
   if (regen) {
-    if (regenIndex < 0 || regenIndex >= cur.messages.length || cur.messages[regenIndex].role !== 'assistant') return;
+    if (!Number.isInteger(regenIndex) || regenIndex < 0 || regenIndex >= cur.messages.length || cur.messages[regenIndex].role !== 'assistant') return;
     cur.messages = cur.messages.slice(0, regenIndex);
   } else {
     if (!cur.messages.length) cur.title = text.slice(0, 40) || 'Photo';
@@ -622,11 +643,21 @@ function makeDraggable(popup, handle) {
   handle.addEventListener('pointerup', end); handle.addEventListener('pointercancel', end);
 }
 
+/* ---------- Notepad ---------- */
+const noteKey = () => 'lz_note_' + (user?.id || 'guest');
+function updateNoteStat() {
+  const t = $('noteText').value.trim();
+  const words = t ? t.split(/\s+/).length : 0;
+  $('noteStat').textContent = words + (words === 1 ? ' word' : ' words');
+}
+function loadNote() { $('noteText').value = LS.get(noteKey(), '') || ''; updateNoteStat(); }
+function saveNote() { LS.set(noteKey(), $('noteText').value); updateNoteStat(); }
+
 /* ---------- Views, theme, settings, auth ---------- */
 function showView(v) {
   const study = v === 'study';
   $('chatView').hidden = study; $('studyView').hidden = !study; $('composerWrap').hidden = study;
-  if (!study) $('calc').hidden = true;
+  if (!study) { $('calc').hidden = true; $('notepad').hidden = true; clearTimeout(noteTimer); saveNote(); }
   $('sidebar').classList.remove('open');
 }
 function applyTheme() {
@@ -657,6 +688,8 @@ async function enter(u) {
   user = u; $('auth').hidden = true; paintUser();
   try { chats = await Store.load(); } catch (e) { chats = []; alert(e.message); }
   cur = null; renderThread(); renderList(); showView('chat');
+  if (!$('notepad').hidden) loadNote();
+  if (guestDraft) { guestDraft = false; if (!user.guest) send(); }
 }
 
 function wire() {
@@ -670,7 +703,7 @@ function wire() {
     const b = e.target.closest('.ab'); if (!b) return;
     const t = b.closest('.mc').querySelector('.t');
     if (b.classList.contains('copy')) { navigator.clipboard?.writeText(t._raw || t.innerText); b.lastChild.textContent = 'Copied'; setTimeout(() => b.lastChild.textContent = 'Copy', 1500); }
-    else if (b.classList.contains('regen')) send(Number(b.dataset.index));
+    else if (b.classList.contains('regen')) { const i = Number(b.dataset.index); if (Number.isInteger(i) && i >= 0) send(i); }
     else if (b.classList.contains('spk')) speak(t._raw || t.innerText, b);
   });
   $('newChat').onclick = () => { if (ctrl) return; cur = null; showView('chat'); renderThread(); renderList(); };
@@ -703,6 +736,12 @@ function wire() {
   $('calcToggle').onclick = () => $('calc').hidden = !$('calc').hidden;
   $('calcClose').onclick = () => $('calc').hidden = true;
   makeDraggable($('calc'), $('calcHead'));
+
+  $('noteToggle').onclick = () => { const n = $('notepad'); n.hidden = !n.hidden; if (!n.hidden) { loadNote(); $('noteText').focus(); } };
+  $('noteClose').onclick = () => { $('notepad').hidden = true; clearTimeout(noteTimer); saveNote(); };
+  $('noteClear').onclick = () => { if ($('noteText').value && confirm('Clear all notes?')) { $('noteText').value = ''; saveNote(); } };
+  $('noteText').addEventListener('input', () => { clearTimeout(noteTimer); noteTimer = setTimeout(saveNote, 300); updateNoteStat(); });
+  makeDraggable($('notepad'), $('noteHead'));
 }
 
 (async function init() {
