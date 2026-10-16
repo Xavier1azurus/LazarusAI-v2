@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+  <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -720,60 +720,6 @@ button { cursor: pointer; }
 .note-meta .alt { padding: 4px 8px; }
 
 /* ============================================================
-   Guest upsell card
-   ============================================================ */
-.upsell {
-  margin: 4px 0 26px;
-  padding: clamp(18px, 2.6vw, 26px);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  background: var(--panel);
-  box-shadow: var(--shadow);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
-  gap: clamp(18px, 3.5vw, 40px);
-  align-items: center;
-}
-.upsell.pulse { animation: upPulse .9s ease; }
-@keyframes upPulse {
-  0%, 100% { border-color: var(--border); }
-  35%      { border-color: var(--accent-strong); }
-}
-
-.upsell h3 {
-  margin: 0 0 7px;
-  font: 600 17px/1.35 Inter, system-ui, sans-serif;
-  letter-spacing: -.01em;
-}
-.upsell p { margin: 0 0 18px; color: var(--muted); font-size: 14px; }
-
-.up-btn {
-  padding: 10px 21px;
-  border: 0;
-  border-radius: 999px;
-  background: var(--text);
-  color: var(--bg);
-  font-size: 14px;
-  font-weight: 600;
-}
-.up-btn:hover { opacity: .85; }
-
-.up-feats { display: flex; flex-direction: column; gap: 14px; }
-.uf {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  line-height: 1.35;
-}
-.uf svg { flex: 0 0 18px; color: var(--muted); }
-
-@media (max-width: 560px) {
-  .upsell { grid-template-columns: 1fr; gap: 20px; }
-  .up-feats { gap: 12px; }
-}
-
-/* ============================================================
    Responsive & motion
    ============================================================ */
 @media (max-width: 760px) {
@@ -1027,6 +973,7 @@ let ctrl = null;         // AbortController for the active stream
 let signup = false;      // auth form is in "create account" mode
 let pend = [];           // pending image attachments (data URLs)
 let guestDraft = false;  // guest typed something, then signed in
+let guestFreeUsed = LS.get('lz_guest_free', false); // guest used their one free message
 let noteTimer = null;
 let editingIndex = null; // index of the user message being edited, or null
 let searchQuery = '';    // current sidebar search filter
@@ -1199,13 +1146,7 @@ const Store = {
     chat.updated_at = new Date().toISOString();
 
     if (user.guest) {
-      if (!LS.set('lz_chats_guest', chats)) {
-        // Out of quota — persist a text-only copy rather than losing the chat.
-        LS.set('lz_chats_guest', chats.map(c => ({
-          ...c,
-          messages: c.messages.map(m => m.images ? { ...m, images: null } : m)
-        })));
-      }
+      LS.set('lz_chats_guest', chats);
       return;
     }
 
@@ -1274,14 +1215,19 @@ function md(src) {
    ============================================================ */
 async function stream(messages, onDelta, signal) {
   let session = LS.get('lz_session');
-  let token = session?.access_token || CFG.SB_ANON;
+
+  // Guests get exactly one free request, authenticated with the public key.
+  const guestToken = user && user.guest ? CFG.SB_ANON : null;
+  if (!session?.access_token && !guestToken) {
+    throw new Error('Please sign in to continue.');
+  }
 
   const request = () => fetch(CFG.API, {
     method: 'POST',
     signal,
     headers: {
       'Content-Type': 'application/json',
-      Authorization: 'Bearer ' + token
+      Authorization: 'Bearer ' + (session?.access_token || guestToken)
     },
     body: JSON.stringify({ messages })
   });
@@ -1298,14 +1244,17 @@ async function stream(messages, onDelta, signal) {
     if (refreshed.ok) {
       session = await refreshed.json();
       LS.set('lz_session', session);
-      token = session.access_token;
       res = await request();
     } else {
       localStorage.removeItem('lz_session');
     }
   }
 
-  if (res.status === 401) throw new Error('Your session expired. Please sign in again.');
+  if (res.status === 401) {
+    throw new Error(guestToken
+      ? 'Sign in to keep chatting with Lazarus.'
+      : 'Your session expired. Please sign in again.');
+  }
   if (!res.ok) throw new Error('Chat request failed (' + res.status + ')');
   if (!res.body) throw new Error('The server did not return a response stream.');
 
@@ -1386,69 +1335,6 @@ async function generateTitle(chat) {
     renderList();
     Store.save(chat).catch(() => {});
   } catch { /* keep the fallback title */ }
-}
-
-/* ============================================================
-   Guest allowance
-   ============================================================ */
-const GUEST_FREE_TURNS = 1;   // completed exchanges before the upsell appears
-
-const guestTurnsUsed = chat =>
-  chat ? chat.messages.filter(m => m.role === 'assistant' && m.content).length : 0;
-
-const guestAtLimit = chat =>
-  !!(user && user.guest && guestTurnsUsed(chat) >= GUEST_FREE_TURNS);
-
-const UP_FEATURES = [
-  { d: '<path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9L12 3z"/>',
-    t: 'Unlimited chats, saved for you' },
-  { d: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>' +
-     '<rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
-    t: 'Study Mode: quizzes & flashcards' },
-  { d: '<path d="M4 4h6l2 2h8v13a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1z"/>',
-    t: 'Send photos and ask about them' },
-  { d: '<path d="M21 12a8 8 0 0 1-8 8H7l-4 3 1.2-4.2A8 8 0 1 1 21 12z"/>',
-    t: 'Your history on every device' }
-];
-
-function upsellCard() {
-  const card = document.createElement('div');
-  card.className = 'upsell';
-
-  const main = document.createElement('div');
-  main.innerHTML =
-    '<h3>Continue your conversation</h3>' +
-    '<p>Sign up to keep chatting with Lazarus — it\'s free, and your history comes with you.</p>';
-
-  const button = document.createElement('button');
-  button.className = 'up-btn';
-  button.textContent = 'Sign up for free';
-  button.onclick = openAuth;
-  main.appendChild(button);
-
-  const feats = document.createElement('div');
-  feats.className = 'up-feats';
-  UP_FEATURES.forEach(({ d, t }) => {
-    const row = document.createElement('div');
-    row.className = 'uf';
-    row.innerHTML =
-      '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" ' +
-      'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>';
-    row.appendChild(document.createTextNode(t));
-    feats.appendChild(row);
-  });
-
-  card.append(main, feats);
-  return card;
-}
-
-function nudgeUpsell() {
-  const card = $('messages').querySelector('.upsell');
-  if (!card) { openAuth(); return; }
-  card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  card.classList.remove('pulse');
-  void card.offsetWidth;          // restart the animation
-  card.classList.add('pulse');
 }
 
 /* ============================================================
@@ -1648,8 +1534,6 @@ function renderThread() {
       if (regen) regen.dataset.index = i;
     }
   });
-
-  if (guestAtLimit(cur)) container.appendChild(upsellCard());
 
   $('chatView').scrollTop = $('chatView').scrollHeight;
 }
@@ -1926,9 +1810,10 @@ async function send(regenIndex = null) {
 
   if (!isRegen && !text && !pend.length) return;
 
-  if (user.guest && guestAtLimit(cur)) {
-    if (text || pend.length) guestDraft = true;
-    nudgeUpsell();
+  // Guests get one free message; after that, ask them to sign in.
+  if (user.guest && guestFreeUsed) {
+    if (!isRegen) guestDraft = true;
+    openAuth();
     return;
   }
 
@@ -1972,6 +1857,13 @@ async function send(regenIndex = null) {
     renderThumbs();
     input.value = '';
     input.style.height = 'auto';
+  }
+
+  // The guest's single free request is consumed here.
+  const wasGuest = user.guest;
+  if (wasGuest) {
+    guestFreeUsed = true;
+    LS.set('lz_guest_free', true);
   }
 
   renderThread();
@@ -2024,11 +1916,11 @@ async function send(regenIndex = null) {
     console.error(err);
   }
 
-  if (maybeAutoTitle && accumulated && !user.guest) generateTitle(cur);
+  if (maybeAutoTitle && accumulated) generateTitle(cur);
 
-  if (user.guest && guestAtLimit(cur) && !$('messages').querySelector('.upsell')) {
-    $('messages').appendChild(upsellCard());
-    $('chatView').scrollTop = $('chatView').scrollHeight;
+  // After the guest's free exchange, invite them to sign up.
+  if (wasGuest) {
+    setTimeout(() => { if (user.guest) openAuth(); }, 600);
   }
 }
 
@@ -2095,13 +1987,7 @@ function parseJsonArray(text) {
 }
 
 async function studyGo() {
-  if (user.guest) {
-    $('sRes').innerHTML = '';
-    $('sCards').innerHTML = '';
-    $('sStat').textContent = 'Study Mode is included with a free account.';
-    $('sRes').appendChild(upsellCard());
-    return;
-  }
+  if (user.guest) { openAuth(); return; }
 
   // Re-pressing while a request is in flight aborts it.
   if (studyBusy) { studyCtrl?.abort(); return; }
@@ -2441,6 +2327,12 @@ function setSignup(enabled) {
 }
 
 async function enter(account) {
+  // Already browsing as a guest — just dismiss the modal and keep the chat.
+  if (user?.guest && account.guest) {
+    $('auth').hidden = true;
+    return;
+  }
+
   user = account;
   $('auth').hidden = true;
   paintUser();
