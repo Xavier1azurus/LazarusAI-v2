@@ -1,4 +1,4 @@
-  <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -973,7 +973,7 @@ let ctrl = null;         // AbortController for the active stream
 let signup = false;      // auth form is in "create account" mode
 let pend = [];           // pending image attachments (data URLs)
 let guestDraft = false;  // guest typed something, then signed in
-let guestFreeUsed = LS.get('lz_guest_free', false); // guest used their one free message
+let guestFreeUsed = LS.get('lz_guest_free', false); // guest got their one free reply
 let noteTimer = null;
 let editingIndex = null; // index of the user message being edited, or null
 let searchQuery = '';    // current sidebar search filter
@@ -1211,13 +1211,52 @@ function md(src) {
 }
 
 /* ============================================================
+   Guest session (anonymous Supabase user → real JWT)
+   Requires "Allow anonymous sign-ins" in Supabase Auth settings.
+   Falls back to the public key if anonymous sign-in is unavailable.
+   ============================================================ */
+async function getGuestToken() {
+  const cached = LS.get('lz_guest_session');
+  if (cached?.access_token && (cached.expires_at || 0) * 1000 > Date.now() + 60000) {
+    return cached.access_token;
+  }
+  try {
+    if (cached?.refresh_token) {
+      const r = await fetch(CFG.SB_URL + '/auth/v1/token?grant_type=refresh_token', {
+        method: 'POST',
+        headers: { apikey: CFG.SB_ANON, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh_token: cached.refresh_token })
+      });
+      if (r.ok) {
+        const d = await r.json();
+        LS.set('lz_guest_session', d);
+        return d.access_token;
+      }
+    }
+    const res = await fetch(CFG.SB_URL + '/auth/v1/signup', {
+      method: 'POST',
+      headers: { apikey: CFG.SB_ANON, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ data: { username: 'guest-' + uid().replace(/-/g, '').slice(0, 8) } })
+    });
+    if (!res.ok) return null;
+    const d = await res.json();
+    if (!d.access_token) return null;
+    LS.set('lz_guest_session', d);
+    return d.access_token;
+  } catch {
+    return null;
+  }
+}
+
+/* ============================================================
    Streaming
    ============================================================ */
 async function stream(messages, onDelta, signal) {
-  let session = LS.get('lz_session');
+  const isGuest = !!(user && user.guest);
+  let session = isGuest ? null : LS.get('lz_session');
 
-  // Guests get exactly one free request, authenticated with the public key.
-  const guestToken = user && user.guest ? CFG.SB_ANON : null;
+  // Guests use an anonymous Supabase session (falls back to the public key).
+  const guestToken = isGuest ? ((await getGuestToken()) || CFG.SB_ANON) : null;
   if (!session?.access_token && !guestToken) {
     throw new Error('Please sign in to continue.');
   }
@@ -1859,12 +1898,8 @@ async function send(regenIndex = null) {
     input.style.height = 'auto';
   }
 
-  // The guest's single free request is consumed here.
+  // The guest's free message is only marked used once a reply actually arrives.
   const wasGuest = user.guest;
-  if (wasGuest) {
-    guestFreeUsed = true;
-    LS.set('lz_guest_free', true);
-  }
 
   renderThread();
   renderList();
@@ -1901,6 +1936,10 @@ async function send(regenIndex = null) {
       target.innerHTML = '<p style="color:var(--muted)">Stopped.</p>';
     }
   } else {
+    if (wasGuest) {
+      guestFreeUsed = true;
+      LS.set('lz_guest_free', true);
+    }
     target._act.hidden = false;
     cur.messages.push({ role: 'assistant', content: accumulated });
     target._act.querySelector('.regen').dataset.index = cur.messages.length - 1;
@@ -1916,10 +1955,11 @@ async function send(regenIndex = null) {
     console.error(err);
   }
 
-  if (maybeAutoTitle && accumulated) generateTitle(cur);
+  // Guests only get one request, so skip the extra title-generation call.
+  if (maybeAutoTitle && accumulated && !wasGuest) generateTitle(cur);
 
   // After the guest's free exchange, invite them to sign up.
-  if (wasGuest) {
+  if (wasGuest && guestFreeUsed) {
     setTimeout(() => { if (user.guest) openAuth(); }, 600);
   }
 }
@@ -2560,6 +2600,7 @@ function wire() {
     enter(restored);
   } else {
     user = GUEST;
+    chats = LS.get('lz_chats_guest', []);
     paintUser();
     renderThread();
     renderList();
