@@ -1621,16 +1621,92 @@ function parseJsonArray(text) {
   return JSON.parse(text.slice(start, end + 1));
 }
 
-async function studyGo() {
-  if (user.guest) { openAuth(); return; }
 
-  // Re-pressing while a request is in flight aborts it.
-  if (studyBusy) { studyCtrl?.abort(); return; }
+async function studyGo() {
+  if (user.guest) {
+    openAuth();
+    return;
+  }
+
+  if (studyBusy) {
+    studyCtrl?.abort();
+    return;
+  }
 
   const topic = $('sInput').value.trim();
+
   if (!topic && studyImages.length === 0) {
-  $('sStat').textContent = 'Enter a topic or upload a homework image first.';
-  return;
+    $('sStat').textContent =
+      'Enter a topic or upload a homework image first.';
+    return;
+  }
+
+  const controller = new AbortController();
+  studyCtrl = controller;
+  studyBusy = true;
+
+  const config = STUDY_MODES[studyMode];
+  $('sGo').textContent = 'Stop';
+  $('sRes').innerHTML = '';
+  $('sCards').innerHTML = '';
+  $('sStat').textContent = 'Working on it…';
+
+  let accumulated = '';
+
+  try {
+    const userContent = studyImages.length
+      ? [
+          {
+            type: 'text',
+            text: topic ||
+              'Read the uploaded homework images and help me understand the questions step by step.'
+          },
+          ...studyImages.map(image => ({
+            type: 'image_url',
+            image_url: { url: image.dataUrl }
+          }))
+        ]
+      : topic;
+
+    await stream(
+      [
+        { role: 'system', content: config.prompt },
+        { role: 'user', content: userContent }
+      ],
+      delta => {
+        if (controller.signal.aborted) return;
+        accumulated += delta;
+
+        if (!config.json) {
+          $('sRes').innerHTML = md(accumulated);
+        }
+      },
+      controller.signal
+    );
+
+    if (controller.signal.aborted) return;
+
+    if (studyMode === 'quiz') {
+      renderQuiz(parseJsonArray(accumulated));
+    } else if (studyMode === 'flashcards') {
+      renderCards(parseJsonArray(accumulated));
+    }
+
+    $('sStat').textContent = '';
+  } catch (err) {
+    if (controller.signal.aborted) return;
+
+    $('sStat').textContent = err instanceof SyntaxError
+      ? 'Could not read the result. Try again.'
+      : err.message;
+  } finally {
+    if (studyCtrl === controller) {
+      studyBusy = false;
+      studyCtrl = null;
+      $('sGo').textContent = STUDY_MODES[studyMode].button;
+      $('sGo').disabled = false;
+    }
+  }
 }
 
   const controller = new AbortController();
