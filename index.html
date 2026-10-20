@@ -2027,236 +2027,416 @@ async function enter(account) {
 /* ============================================================
    Event wiring
    ============================================================ */
+
+/* ============================================================
+   Event wiring
+   ============================================================ */
+
 function wire() {
+  // Helpers: safely wire controls that exist in the current HTML.
+  const byId = id => $(id);
+
+  const click = (id, handler) => {
+    const element = byId(id);
+    if (element) element.onclick = handler;
+  };
+
+  const listen = (id, eventName, handler) => {
+    const element = byId(id);
+    if (element) element.addEventListener(eventName, handler);
+  };
+
   /* --- Chat composer --- */
-  $('sendButton').onclick = () => send();
-  $('messageInput').addEventListener('input', growInput);
-  $('messageInput').addEventListener('keydown', event => {
-    if (event.key === 'Enter' && !event.shiftKey && !event.isComposing) {
+
+  click('sendButton', () => send());
+
+  listen('messageInput', 'input', growInput);
+
+  listen('messageInput', 'keydown', event => {
+    if (
+      event.key === 'Enter' &&
+      !event.shiftKey &&
+      !event.isComposing
+    ) {
       event.preventDefault();
       send();
     }
+
     if (event.key === 'Escape' && editingIndex !== null) {
       event.preventDefault();
       cancelEdit();
     }
   });
 
-  $('att').onclick = () => $('file').click();
-  $('file').onchange = event => {
+  click('att', () => {
+    const fileInput = byId('file');
+    if (fileInput) fileInput.click();
+  });
+
+  listen('file', 'change', event => {
     addFiles([...event.target.files]);
     event.target.value = '';
-  };
-  $('mic').onclick = toggleMic;
+  });
 
-  /* --- Message actions (delegated) --- */
-  $('messages').addEventListener('click', event => {
+  click('mic', toggleMic);
+
+  /* --- Message actions --- */
+
+  listen('messages', 'click', event => {
     const button = event.target.closest('.ab');
     if (!button) return;
 
     const message = button.closest('.message');
     if (!message) return;
+
     const mc = message.querySelector('.mc');
+    if (!mc) return;
+
     const target = mc.querySelector('.t') || mc;
 
     if (button.classList.contains('copy')) {
-      navigator.clipboard?.writeText(target._raw || target.innerText);
+      navigator.clipboard?.writeText(
+        target._raw || target.innerText
+      );
+
       setActionLabel(button, 'Copied');
       setTimeout(() => setActionLabel(button, 'Copy'), 1500);
+
     } else if (button.classList.contains('regen')) {
       const index = Number(button.dataset.index);
       if (Number.isInteger(index) && index >= 0) send(index);
+
     } else if (button.classList.contains('edit')) {
       startEdit(Number(button.dataset.index));
+
     } else if (button.classList.contains('spk')) {
       speak(target._raw || target.innerText, button);
     }
   });
 
   /* --- Sidebar & navigation --- */
-  $('newChat').onclick = () => {
+
+  click('newChat', () => {
     if (ctrl) return;
+
     cur = null;
     cancelEdit();
     searchQuery = '';
-    $('chatSearch').value = '';
+
+    const search = byId('chatSearch');
+    if (search) search.value = '';
+
     showView('chat');
     renderThread();
     renderList();
-  };
-  $('studyBtn').onclick = () => {
-    if (cur && cur.private && !ctrl) { cur = null; renderThread(); renderList(); }
+  });
+
+  click('studyBtn', () => {
+    if (cur && cur.private && !ctrl) {
+      cur = null;
+      renderThread();
+      renderList();
+    }
+
     showView('study');
     setStudyMode(studyMode);
-    document.querySelectorAll('#tabs .tab').forEach(tab => {
-  tab.onclick = () => setStudyMode(tab.dataset.m);
-});
+  });
 
-$('sGo').onclick = studyGo;
-$('studyImageButton').onclick = () => {
-  $('studyImageInput').click();
-};
-  };
-  $('privBtn').onclick = () => {
+  click('privBtn', () => {
     if (ctrl) return;
+
     cancelEdit();
-    cur = { id: uid(), title: 'Private chat', messages: [], private: true };
+
+    cur = {
+      id: uid(),
+      title: 'Private chat',
+      messages: [],
+      private: true
+    };
+
     searchQuery = '';
-    $('chatSearch').value = '';
+
+    const search = byId('chatSearch');
+    if (search) search.value = '';
+
     showView('chat');
     renderThread();
     renderList();
-    $('messageInput').focus();
-  };
-  $('sidebarToggle').onclick = () => {
-    if (innerWidth <= 760) $('sidebar').classList.toggle('open');
-    else $('sidebar').classList.toggle('collapsed');
-  };
-  $('menu').onclick = () => $('sidebar').classList.add('open');
-  $('out').onclick = async () => {
-    if (user.guest) { openAuth(); return; }
+
+    byId('messageInput')?.focus();
+  });
+
+  click('sidebarToggle', () => {
+    const sidebar = byId('sidebar');
+    if (!sidebar) return;
+
+    if (innerWidth <= 760) {
+      sidebar.classList.toggle('open');
+    } else {
+      sidebar.classList.toggle('collapsed');
+    }
+  });
+
+  click('menu', () => {
+    byId('sidebar')?.classList.add('open');
+  });
+
+  click('out', async () => {
+    if (user.guest) {
+      openAuth();
+      return;
+    }
+
     await Auth.out();
     location.reload();
-  };
+  });
 
   /* --- Search --- */
-  $('chatSearch').addEventListener('input', event => {
+
+  listen('chatSearch', 'input', event => {
     searchQuery = event.target.value;
     renderList();
   });
 
   /* --- Edit banner --- */
-  $('editCancel').onclick = cancelEdit;
+
+  click('editCancel', cancelEdit);
 
   /* --- Drag and drop --- */
-  wireDragDrop();
+
+  if (
+    typeof wireDragDrop === 'function'
+  ) {
+    wireDragDrop();
+  }
 
   /* --- Settings --- */
-  $('gear').onclick = () => { syncSettings(); $('set').hidden = false; };
-  $('sx').onclick = () => { $('set').hidden = true; };
 
-  $('seg').onclick = event => {
+  click('gear', () => {
+    syncSettings();
+
+    const settings = byId('set');
+    if (settings) settings.hidden = false;
+  });
+
+  click('sx', () => {
+    const settings = byId('set');
+    if (settings) settings.hidden = true;
+  });
+
+  click('seg', event => {
     const button = event.target.closest('button');
     if (!button) return;
+
     prefs.theme = button.dataset.t;
     LS.set('lz_prefs', prefs);
     applyTheme();
     syncSettings();
-  };
-  $('pers').onclick = event => {
+  });
+
+  click('pers', event => {
     const button = event.target.closest('button');
     if (!button) return;
+
     prefs.personality = button.dataset.p;
     syncSettings();
-  };
-  $('lens').onclick = event => {
+  });
+
+  click('lens', event => {
     const button = event.target.closest('button');
     if (!button) return;
+
     prefs.length = button.dataset.l;
     syncSettings();
-  };
-  $('ssave').onclick = () => {
-    prefs.name = $('dn').value.trim();
-    prefs.about = $('about').value.trim();
+  });
+
+  click('ssave', () => {
+    const name = byId('dn');
+    const about = byId('about');
+    const settings = byId('set');
+
+    prefs.name = name ? name.value.trim() : '';
+    prefs.about = about ? about.value.trim() : '';
+
     LS.set('lz_prefs', prefs);
     paintUser();
     renderThread();
-    $('set').hidden = true;
-  };
 
-  matchMedia('(prefers-color-scheme: light)').addEventListener?.('change', applyTheme);
+    if (settings) settings.hidden = true;
+  });
 
-  /* --- Auth --- */
-  $('sw').onclick = () => setSignup(!signup);
-  $('gs').onclick = () => enter(GUEST);
-  $('af').onsubmit = async event => {
-    event.preventDefault();
-    $('ab').disabled = true;
-    $('err').textContent = '';
+  if (typeof matchMedia === 'function') {
+    matchMedia('(prefers-color-scheme: light)')
+      .addEventListener?.('change', applyTheme);
+  }
 
-    try {
-      const account = await Auth.login(
-        $('em').value.trim(),
-        $('pw').value,
-        signup,
-        $('un').value.trim()
-      );
-      await enter(account);
-    } catch (err) {
-      $('err').textContent = err.message;
-    }
+  /* --- Authentication --- */
 
-    $('ab').disabled = false;
-  };
+  click('sw', () => setSignup(!signup));
 
-  /* --- Study mode --- */
-  $('tabs').onclick = event => {
-    const button = event.target.closest('.tab');
-    if (button) setStudyMode(button.dataset.m);
-  };
-  $('sGo').onclick = studyGo;
+  click('gs', () => enter(GUEST));
+
+  const authForm = byId('af');
+
+  if (authForm) {
+    authForm.onsubmit = async event => {
+      event.preventDefault();
+
+      const submitButton = byId('ab');
+      const errorMessage = byId('err');
+
+      if (submitButton) submitButton.disabled = true;
+      if (errorMessage) errorMessage.textContent = '';
+
+      try {
+        const email = byId('em');
+        const password = byId('pw');
+        const username = byId('un');
+
+        const account = await Auth.login(
+          email ? email.value.trim() : '',
+          password ? password.value : '',
+          signup,
+          username ? username.value.trim() : ''
+        );
+
+        await enter(account);
+
+      } catch (err) {
+        if (errorMessage) {
+          errorMessage.textContent = err.message;
+        }
+
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
+    };
+  }
+
+  /* --- Study Mode --- */
+
+  const tabs = byId('tabs');
+
+  if (tabs) {
+    tabs.onclick = event => {
+      const button = event.target.closest('.tab');
+
+      if (button && button.dataset.m) {
+        setStudyMode(button.dataset.m);
+      }
+    };
+  }
+
+  click('sGo', studyGo);
+
+  // The image upload script already has its own click listener.
+  // Do not attach a second click listener here.
 
   /* --- Calculator --- */
-  $('calcKeys').innerHTML = CALC_KEYS
-    .map(key => '<button data-k="' + key + '">' + key + '</button>')
-    .join('');
-  $('calcKeys').onclick = event => {
-    const button = event.target.closest('button');
-    if (button) calcPress(button.dataset.k);
-  };
-  $('calcToggle').onclick = () => { $('calc').hidden = !$('calc').hidden; };
-  $('calcClose').onclick = () => { $('calc').hidden = true; };
-  makeDraggable($('calc'), $('calcHead'));
+
+  const calcKeys = byId('calcKeys');
+
+  if (calcKeys) {
+    calcKeys.innerHTML = CALC_KEYS
+      .map(key =>
+        '<button type="button" data-k="' +
+        key +
+        '">' +
+        key +
+        '</button>'
+      )
+      .join('');
+
+    calcKeys.onclick = event => {
+      const button = event.target.closest('button');
+      if (button) calcPress(button.dataset.k);
+    };
+  }
+
+  click('calcToggle', () => {
+    const calc = byId('calc');
+    if (calc) calc.hidden = !calc.hidden;
+  });
+
+  click('calcClose', () => {
+    const calc = byId('calc');
+    if (calc) calc.hidden = true;
+  });
+
+  if (byId('calc') && byId('calcHead')) {
+    makeDraggable(byId('calc'), byId('calcHead'));
+  }
 
   /* --- Notepad --- */
-  $('noteToggle').onclick = () => {
-    const notepad = $('notepad');
+
+  click('noteToggle', () => {
+    const notepad = byId('notepad');
+    if (!notepad) return;
+
     notepad.hidden = !notepad.hidden;
+
     if (!notepad.hidden) {
       loadNote();
-      $('noteText').focus();
+      byId('noteText')?.focus();
     }
-  };
-  $('noteClose').onclick = () => {
-    $('notepad').hidden = true;
+  });
+
+  click('noteClose', () => {
+    const notepad = byId('notepad');
+    if (notepad) notepad.hidden = true;
+
     clearTimeout(noteTimer);
     saveNote();
-  };
-  $('noteClear').onclick = () => {
-    if ($('noteText').value && confirm('Clear all notes?')) {
-      $('noteText').value = '';
+  });
+
+  click('noteClear', () => {
+    const noteText = byId('noteText');
+
+    if (
+      noteText &&
+      noteText.value &&
+      confirm('Clear all notes?')
+    ) {
+      noteText.value = '';
       saveNote();
     }
-  };
-  $('noteText').addEventListener('input', () => {
+  });
+
+  listen('noteText', 'input', () => {
     clearTimeout(noteTimer);
     noteTimer = setTimeout(saveNote, 300);
     updateNoteStat();
   });
-  makeDraggable($('notepad'), $('noteHead'));
+
+  if (byId('notepad') && byId('noteHead')) {
+    makeDraggable(byId('notepad'), byId('noteHead'));
+  }
 }
 
 /* ============================================================
    Init
    ============================================================ */
+
 (async function init() {
-  applyTheme();
-  wire();
-  setSignup(false);
+  try {
+    applyTheme();
+    wire();
+    setSignup(false);
 
-  const restored = await Auth.restore();
+    const restored = await Auth.restore();
 
-  if (restored) {
-    enter(restored);
-  } else {
-    user = GUEST;
-    chats = LS.get('lz_chats_guest', []);
-    paintUser();
-    renderThread();
-    renderList();
-    openAuth();
+    if (restored) {
+      await enter(restored);
+    } else {
+      user = GUEST;
+      chats = LS.get('lz_chats_guest', []);
+
+      paintUser();
+      renderThread();
+      renderList();
+      openAuth();
+    }
+  } catch (error) {
+    console.error('Lazarus initialization failed:', error);
   }
 })();
-</script>
-</body>
-</html>
