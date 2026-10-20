@@ -2420,19 +2420,28 @@ function wire() {
     updateNoteStat();
   });
 
+
   if (byId('notepad') && byId('noteHead')) {
     makeDraggable(byId('notepad'), byId('noteHead'));
   }
-
-  const studyButton = document.getElementById('studyBtn');
-
-  if (studyButton) {
-    studyButton.onclick = function () {
-      document.getElementById('chatView').hidden = true;
-      document.getElementById('studyView').hidden = false;
-    };
-  }
 }
+
+// Attach Study Mode navigation after the page loads.
+document.addEventListener('DOMContentLoaded', () => {
+  const studyButton = document.getElementById('studyBtn');
+  const chatView = document.getElementById('chatView');
+  const studyView = document.getElementById('studyView');
+
+  if (!studyButton || !chatView || !studyView) {
+    console.error('Study Mode: required HTML elements are missing.');
+    return;
+  }
+
+  studyButton.addEventListener('click', () => {
+    chatView.hidden = true;
+    studyView.hidden = false;
+  });
+});
 
 
 /* ============================================================
