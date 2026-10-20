@@ -2088,6 +2088,14 @@ function wire() {
     if (cur && cur.private && !ctrl) { cur = null; renderThread(); renderList(); }
     showView('study');
     setStudyMode(studyMode);
+    document.querySelectorAll('#tabs .tab').forEach(tab => {
+  tab.onclick = () => setStudyMode(tab.dataset.m);
+});
+
+$('sGo').onclick = studyGo;
+$('studyImageButton').onclick = () => {
+  $('studyImageInput').click();
+};
   };
   $('privBtn').onclick = () => {
     if (ctrl) return;
