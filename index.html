@@ -2152,16 +2152,27 @@ function wire() {
   });
 
   click('studyBtn', () => {
-    if (cur && cur.private && !ctrl) {
-      cur = null;
-      renderThread();
-      renderList();
-    }
+  if (cur && cur.private && !ctrl) {
+    cur = null;
+    renderThread();
+    renderList();
+  }
 
-    showView('study');
+  const chatView = $('chatView');
+  const studyView = $('studyView');
+  const composerWrap = $('composerWrap');
+
+  if (chatView) chatView.hidden = true;
+  if (studyView) studyView.hidden = false;
+  if (composerWrap) composerWrap.hidden = true;
+
+  const sidebar = $('sidebar');
+  if (sidebar) sidebar.classList.remove('open');
+
+  if (typeof setStudyMode === 'function') {
     setStudyMode(studyMode);
-  });
-
+  }
+});
   click('privBtn', () => {
     if (ctrl) return;
 
