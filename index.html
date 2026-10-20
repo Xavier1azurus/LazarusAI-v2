@@ -1921,32 +1921,21 @@ function wireDragDrop() {
    Views, theme, settings, auth flows
    ============================================================ */
 
+
 function showView(view) {
   const isStudy = view === 'study';
 
-  if (!isStudy && typeof studyCtrl !== 'undefined' && studyCtrl) {
-    studyCtrl.abort();
-    studyCtrl = null;
-    studyBusy = false;
-
-    const goButton = $('sGo');
-    if (goButton && typeof STUDY_MODES !== 'undefined') {
-      goButton.textContent = STUDY_MODES[studyMode].button;
-      goButton.disabled = false;
-    }
-  }
-
-  const chatView = $('chatView');
-  const studyView = $('studyView');
-  const composerWrap = $('composerWrap');
+  const chatView = document.getElementById('chatView');
+  const studyView = document.getElementById('studyView');
+  const composerWrap = document.getElementById('composerWrap');
 
   if (chatView) chatView.hidden = isStudy;
   if (studyView) studyView.hidden = !isStudy;
   if (composerWrap) composerWrap.hidden = isStudy;
 
   if (!isStudy) {
-    const calc = $('calc');
-    const notepad = $('notepad');
+    const calc = document.getElementById('calc');
+    const notepad = document.getElementById('notepad');
 
     if (calc) calc.hidden = true;
     if (notepad) notepad.hidden = true;
@@ -1960,9 +1949,10 @@ function showView(view) {
     }
   }
 
-  const sidebar = $('sidebar');
+  const sidebar = document.getElementById('sidebar');
   if (sidebar) sidebar.classList.remove('open');
 }
+
 
 function applyTheme() {
   const theme = prefs.theme === 'system'
