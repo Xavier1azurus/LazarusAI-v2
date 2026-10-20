@@ -2423,7 +2423,17 @@ function wire() {
   if (byId('notepad') && byId('noteHead')) {
     makeDraggable(byId('notepad'), byId('noteHead'));
   }
+
+  const studyButton = document.getElementById('studyBtn');
+
+  if (studyButton) {
+    studyButton.onclick = function () {
+      document.getElementById('chatView').hidden = true;
+      document.getElementById('studyView').hidden = false;
+    };
+  }
 }
+
 
 /* ============================================================
    Init
