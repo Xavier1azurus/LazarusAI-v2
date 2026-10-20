@@ -1920,29 +1920,48 @@ function wireDragDrop() {
 /* ============================================================
    Views, theme, settings, auth flows
    ============================================================ */
+
 function showView(view) {
   const isStudy = view === 'study';
 
-  if (!isStudy && studyCtrl) {
+  if (!isStudy && typeof studyCtrl !== 'undefined' && studyCtrl) {
     studyCtrl.abort();
     studyCtrl = null;
     studyBusy = false;
-    $('sGo').textContent = STUDY_MODES[studyMode].button;
-    $('sGo').disabled = false;
+
+    const goButton = $('sGo');
+    if (goButton && typeof STUDY_MODES !== 'undefined') {
+      goButton.textContent = STUDY_MODES[studyMode].button;
+      goButton.disabled = false;
+    }
   }
 
-  $('chatView').hidden = isStudy;
-  $('studyView').hidden = !isStudy;
-  $('composerWrap').hidden = isStudy;
+  const chatView = $('chatView');
+  const studyView = $('studyView');
+  const composerWrap = $('composerWrap');
+
+  if (chatView) chatView.hidden = isStudy;
+  if (studyView) studyView.hidden = !isStudy;
+  if (composerWrap) composerWrap.hidden = isStudy;
 
   if (!isStudy) {
-    $('calc').hidden = true;
-    $('notepad').hidden = true;
-    clearTimeout(noteTimer);
-    saveNote();
+    const calc = $('calc');
+    const notepad = $('notepad');
+
+    if (calc) calc.hidden = true;
+    if (notepad) notepad.hidden = true;
+
+    if (typeof noteTimer !== 'undefined') {
+      clearTimeout(noteTimer);
+    }
+
+    if (typeof saveNote === 'function') {
+      saveNote();
+    }
   }
 
-  $('sidebar').classList.remove('open');
+  const sidebar = $('sidebar');
+  if (sidebar) sidebar.classList.remove('open');
 }
 
 function applyTheme() {
