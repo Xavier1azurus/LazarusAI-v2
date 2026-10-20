@@ -330,77 +330,106 @@ button{cursor:pointer;transition:background .15s,color .15s,border-color .15s,op
       <div id="messages" class="msgs"></div>
     </section>
 
-    <section id="studyView" hidden>
-      <div class="si">
-        <header>
-          <h1>Study Mode</h1>
-          <p>Your personal learning space. Understand more, practise more, and learn at your pace.</p>
-        </header>
+<section id="studyView" hidden>
+  <div class="si">
+    <header>
+      <h1>Study Mode</h1>
+      <p>Your personal learning space. Understand more, practise more, and learn at your pace.</p>
+    </header>
 
-        <div class="tabs" id="tabs">
-          <button class="tab on" data-m="learn">Learn</button>
-          <button class="tab" data-m="quiz">Quiz</button>
-          <button class="tab" data-m="flashcards">Flashcards</button>
-          <button class="tab" data-m="homework">Homework</button>
-        </div>
+    <div class="tabs" id="tabs">
+      <button class="tab on" data-m="learn">Learn</button>
+      <button class="tab" data-m="quiz">Quiz</button>
+      <button class="tab" data-m="flashcards">Flashcards</button>
+      <button class="tab" data-m="homework">Homework</button>
+    </div>
 
-        <div class="tools">
-          <button class="ctog" id="noteToggle">Notepad</button>
-          <button class="ctog" id="calcToggle">Calculator</button>
-        </div>
+    <div class="tools">
+      <button class="ctog" id="noteToggle">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M5 3.5h14v17H5z"/>
+          <path d="M8 8h8M8 12h8M8 16h5"/>
+        </svg>
+        Notepad
+      </button>
 
-        <div class="sp">
-          <h2 id="sTitle"></h2>
-          <p class="d" id="sDesc"></p>
-          <label for="sInput">What are you studying?</label>
-          
-<textarea id="sInput" class="sf" placeholder="Enter a topic, question, or paste your notes..."></textarea>
+      <button class="ctog" id="calcToggle">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <rect x="5" y="2.5" width="14" height="19" rx="2.5"/>
+          <path d="M8 6h8v4H8zM8 14h.01M12 14h.01M16 14h.01M8 17.5h.01M12 17.5h.01M16 17.5h.01"/>
+        </svg>
+        Calculator
+      </button>
+    </div>
 
-<div class="study-image-tools">
-  <input type="file" id="studyImageInput" accept="image/*" multiple hidden>
-  <button type="button" class="sprim" id="studyImageButton">
-    📷 Upload homework images
-  </button>
-  <div id="studyImagePreview" class="study-image-preview"></div>
-</div>
+    <div class="sp">
+      <h2 id="sTitle"></h2>
+      <p class="d" id="sDesc"></p>
 
-          <button class="sprim" id="sGo"></button>
-          <p class="sstat" id="sStat" role="status"></p>
-          <div id="sRes" class="study-result"></div>
-          <div id="sCards" class="fcs"></div>
+      <label for="sInput">What are you studying?</label>
+
+      <div class="study-composer">
+        <div id="studyImagePreview" class="study-image-preview"></div>
+
+        <textarea
+          id="sInput"
+          class="sf"
+          placeholder="Enter a topic, question, or paste your notes..."
+          aria-label="Study topic or question"
+        ></textarea>
+
+        <div class="study-composer-actions">
+          <input
+            type="file"
+            id="studyImageInput"
+            accept="image/*"
+            multiple
+            hidden
+          >
+
+          <button
+            type="button"
+            class="study-black-btn"
+            id="studyImageButton"
+            aria-label="Upload homework images"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="3" y="3" width="18" height="18" rx="3"/>
+              <circle cx="8.5" cy="8.5" r="1.5"/>
+              <path d="m21 15-5-5L5 21"/>
+              <path d="M12 12v6M9 15h6"/>
+            </svg>
+            <span>Image</span>
+          </button>
+
+          <button type="button" class="study-black-btn" id="sGo">
+          </button>
+
+          <button
+            type="button"
+            class="study-black-btn"
+            id="studyShareButton"
+            aria-label="Share study result"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="18" cy="5" r="3"/>
+              <circle cx="6" cy="12" r="3"/>
+              <circle cx="18" cy="19" r="3"/>
+              <path d="m8.7 10.7 6.6-4.4M8.7 13.3l6.6 4.4"/>
+            </svg>
+            <span>Share</span>
+          </button>
         </div>
       </div>
-    </section>
 
-    <footer id="composerWrap" class="cw">
-      <div id="editBanner" class="edit-banner" hidden>
-        <span>Editing message</span>
-        <button type="button" id="editCancel">Cancel</button>
-      </div>
-      <div id="thumbs" hidden></div>
-      <div class="composer">
-        <button class="ib" id="att" aria-label="Attach photos">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="m21 15-5-5L5 21"/>
-          </svg>
-        </button>
-        <input type="file" id="file" accept="image/*" multiple hidden>
-        <textarea id="messageInput" rows="1" maxlength="12000" placeholder="Message Lazarus..." aria-label="Message Lazarus"></textarea>
-        <button class="ib" id="mic" aria-label="Dictate message">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/>
-          </svg>
-        </button>
-        <button class="send" id="sendButton" aria-label="Send">↑</button>
-      </div>
-      <p class="note">Lazarus can make mistakes. Check important information.</p>
-    </footer>
+      <p class="sstat" id="sStat" role="status"></p>
+      <div id="sRes" class="study-result"></div>
+      <div id="sCards" class="fcs"></div>
+    </div>
+  </div>
+</section>
 
-    <div id="dropOverlay" class="drop-overlay" hidden>Drop to attach images</div>
-  </main>
-</div>
-
-<!-- ============================================================
+   =======================================
      Floating tools
      ============================================================ -->
 <div id="calc" class="calc" hidden>
