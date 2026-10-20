@@ -353,7 +353,17 @@ button{cursor:pointer;transition:background .15s,color .15s,border-color .15s,op
           <h2 id="sTitle"></h2>
           <p class="d" id="sDesc"></p>
           <label for="sInput">What are you studying?</label>
-          <textarea id="sInput" class="sf" placeholder="Enter a topic, question, or paste your notes..."></textarea>
+          
+<textarea id="sInput" class="sf" placeholder="Enter a topic, question, or paste your notes..."></textarea>
+
+<div class="study-image-tools">
+  <input type="file" id="studyImageInput" accept="image/*" multiple hidden>
+  <button type="button" class="sprim" id="studyImageButton">
+    📷 Upload homework images
+  </button>
+  <div id="studyImagePreview" class="study-image-preview"></div>
+</div>
+
           <button class="sprim" id="sGo"></button>
           <p class="sstat" id="sStat" role="status"></p>
           <div id="sRes" class="study-result"></div>
@@ -1527,6 +1537,83 @@ function setStudyMode(mode) {
   $('sStat').textContent = '';
 }
 
+let studyImages = [];
+
+const studyImageInput = document.getElementById('studyImageInput');
+const studyImageButton = document.getElementById('studyImageButton');
+const studyImagePreview = document.getElementById('studyImagePreview');
+
+if (studyImageInput && studyImageButton && studyImagePreview) {
+  studyImageButton.addEventListener('click', () => {
+    studyImageInput.click();
+  });
+
+  studyImageInput.addEventListener('change', async () => {
+    const files = Array.from(studyImageInput.files || []);
+    studyImageInput.value = '';
+
+    for (const file of files) {
+      if (!file.type.startsWith('image/')) continue;
+
+      if (file.size > 5 * 1024 * 1024) {
+        $('sStat').textContent = 'Each image must be 5 MB or smaller.';
+        continue;
+      }
+
+      if (studyImages.length >= 4) {
+        $('sStat').textContent = 'You can upload up to 4 images.';
+        break;
+      }
+
+      try {
+        const dataUrl = await new Promise((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result);
+          reader.onerror = () => reject(new Error('Could not read that image.'));
+          reader.readAsDataURL(file);
+        });
+
+        studyImages.push({
+          name: file.name,
+          dataUrl
+        });
+      } catch (error) {
+        $('sStat').textContent = error.message;
+      }
+    }
+
+    renderStudyImagePreviews();
+  });
+}
+
+function renderStudyImagePreviews() {
+  if (!studyImagePreview) return;
+
+  studyImagePreview.replaceChildren();
+
+  studyImages.forEach((image, index) => {
+    const item = document.createElement('div');
+    item.className = 'study-image-item';
+
+    const thumbnail = document.createElement('img');
+    thumbnail.src = image.dataUrl;
+    thumbnail.alt = image.name;
+
+    const remove = document.createElement('button');
+    remove.type = 'button';
+    remove.textContent = '×';
+    remove.setAttribute('aria-label', 'Remove ' + image.name);
+
+    remove.addEventListener('click', () => {
+      studyImages.splice(index, 1);
+      renderStudyImagePreviews();
+    });
+
+    item.append(thumbnail, remove);
+    studyImagePreview.appendChild(item);
+  });
+}
+
 function parseJsonArray(text) {
   const start = text.indexOf('[');
   const end = text.lastIndexOf(']');
@@ -1541,7 +1628,10 @@ async function studyGo() {
   if (studyBusy) { studyCtrl?.abort(); return; }
 
   const topic = $('sInput').value.trim();
-  if (!topic) return;
+  if (!topic && studyImages.length === 0) {
+  $('sStat').textContent = 'Enter a topic or upload a homework image first.';
+  return;
+}
 
   const controller = new AbortController();
   studyCtrl = controller;
@@ -1555,36 +1645,32 @@ async function studyGo() {
 
   let accumulated = '';
   try {
-    await stream(
-      [{ role: 'system', content: config.prompt }, { role: 'user', content: topic }],
-      delta => {
-        if (controller.signal.aborted) return;
-        accumulated += delta;
-        if (!config.json) $('sRes').innerHTML = md(accumulated);
+    
+const userContent = studyImages.length
+  ? [
+      {
+        type: 'text',
+        text: topic || 'Read the uploaded homework images and help me solve the questions step by step.'
       },
-      controller.signal
-    );
+      ...studyImages.map(image => ({
+        type: 'image_url',
+        image_url: { url: image.dataUrl }
+      }))
+    ]
+  : topic;
 
+await stream(
+  [
+    { role: 'system', content: config.prompt },
+    { role: 'user', content: userContent }
+  ],
+  delta => {
     if (controller.signal.aborted) return;
-    if (studyMode === 'quiz') renderQuiz(parseJsonArray(accumulated));
-    else if (studyMode === 'flashcards') renderCards(parseJsonArray(accumulated));
-
-    $('sStat').textContent = '';
-  } catch (err) {
-    if (controller.signal.aborted) return;
-    $('sStat').textContent = err instanceof SyntaxError
-      ? 'Could not read the result. Try again.'
-      : err.message;
-  } finally {
-    // Only reset shared state if we're still the active run.
-    if (studyCtrl === controller) {
-      studyBusy = false;
-      studyCtrl = null;
-      $('sGo').textContent = STUDY_MODES[studyMode].button;
-      $('sGo').disabled = false;
-    }
-  }
-}
+    accumulated += delta;
+    if (!config.json) $('sRes').innerHTML = md(accumulated);
+  },
+  controller.signal
+);
 
 function renderCards(cards) {
   const box = $('sCards');
