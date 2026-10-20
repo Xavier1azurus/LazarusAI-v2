@@ -2141,28 +2141,19 @@ function wire() {
     renderList();
   });
 
+ 
   click('studyBtn', () => {
-  if (cur && cur.private && !ctrl) {
-    cur = null;
-    renderThread();
-    renderList();
-  }
+    const chatView = byId('chatView');
+    const studyView = byId('studyView');
+    const composerWrap = byId('composerWrap');
 
-  const chatView = $('chatView');
-  const studyView = $('studyView');
-  const composerWrap = $('composerWrap');
+    if (chatView) chatView.hidden = true;
+    if (studyView) studyView.hidden = false;
+    if (composerWrap) composerWrap.hidden = true;
 
-  if (chatView) chatView.hidden = true;
-  if (studyView) studyView.hidden = false;
-  if (composerWrap) composerWrap.hidden = true;
+    byId('sidebar')?.classList.remove('open');
+  });
 
-  const sidebar = $('sidebar');
-  if (sidebar) sidebar.classList.remove('open');
-
-  if (typeof setStudyMode === 'function') {
-    setStudyMode(studyMode);
-  }
-});
   click('privBtn', () => {
     if (ctrl) return;
 
