@@ -2140,7 +2140,10 @@ function wire() {
     renderThread();
     renderList();
   });
-
+click('studyBtn', () => {
+  showView('study');
+  setStudyMode(studyMode);
+});
   click('studyBtn', () => {
   if (cur && cur.private && !ctrl) {
     cur = null;
