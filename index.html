@@ -37,6 +37,8 @@
   --font-sans:"Anthropic Sans","Inter",ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --font-serif:"Anthropic Serif","Source Serif 4",Georgia,"Times New Roman",serif;
   --font-mono:"Anthropic Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+
+  --logo: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='-8 -8 301 308'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%238fb0c6'/%3E%3Cstop offset='1' stop-color='%2352707f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='none' stroke='url(%23g)' stroke-linejoin='miter' stroke-linecap='butt'%3E%3Cg stroke-width='13'%3E%3Cpath d='M105 105L138 4 190 62'/%3E%3Cpath d='M222 98L280 140 222 190'/%3E%3Cpath d='M110 205L142 287 175 210'/%3E%3Cpath d='M105 105L5 140 82 177'/%3E%3C/g%3E%3Cg stroke-width='9' stroke-linecap='round'%3E%3Cpath d='M140 140L207 77M140 140L96 184M140 140L195 200M207 77L195 200'/%3E%3C/g%3E%3C/g%3E%3Cg fill='url(%23g)'%3E%3Ccircle cx='207' cy='77' r='17'/%3E%3Ccircle cx='140' cy='140' r='19'/%3E%3Ccircle cx='96' cy='184' r='18'/%3E%3Ccircle cx='195' cy='200' r='18'/%3E%3C/g%3E%3C/svg%3E");
 }
 :root[data-theme=light]{
   color-scheme: light;
@@ -77,6 +79,9 @@ button{cursor:pointer;transition:background .15s,color .15s,border-color .15s,op
 ::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:99px}
 svg{display:block}
 
+/* reusable logo element */
+.lz-logo{background:var(--logo) center/contain no-repeat;flex-shrink:0}
+
 .app{display:flex;height:100dvh}
 
 /* ====== Sidebar ====== */
@@ -89,13 +94,14 @@ svg{display:block}
 .sidebar.collapsed{width:0;min-width:0;padding:0;border:0}
 
 .sidebar-header{
-  display:flex;align-items:center;gap:4px;height:44px;
+  display:flex;align-items:center;gap:8px;height:44px;
   padding:0 4px;margin-bottom:4px;flex-shrink:0;
 }
+.sidebar-brand-logo{width:22px;height:22px;flex:0 0 22px}
 .sidebar-brand{
   font-family:var(--font-serif);
   font-size:17px;font-weight:500;color:var(--text);
-  letter-spacing:-.01em;white-space:nowrap;
+  letter-spacing:-.01em;white-space:nowrap;flex:1;
 }
 .icon-btn{
   width:32px;height:32px;border:0;border-radius:8px;
@@ -197,13 +203,14 @@ svg{display:block}
 .main.sidebar-hidden .topbar-btn{display:grid}
 
 .model-selector{
-  display:flex;align-items:center;gap:4px;
+  display:flex;align-items:center;gap:6px;
   padding:6px 10px;border-radius:8px;
   font-size:14px;font-weight:500;color:var(--muted);
   white-space:nowrap;
 }
 .model-selector:hover{background:var(--hover);color:var(--text)}
 .model-selector svg{opacity:.55}
+.model-logo{width:16px;height:16px;flex:0 0 16px;opacity:.9}
 
 /* ====== Chat ====== */
 .chat{flex:1;min-height:0;overflow-y:auto;padding:8px 24px}
@@ -217,6 +224,11 @@ svg{display:block}
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   text-align:center;padding:0 20px 24px;
+}
+.welcome-logo{
+  width:52px;height:52px;margin-bottom:20px;
+  background:var(--logo) center/contain no-repeat;
+  opacity:.95;
 }
 .welcome h1{
   margin:0;
@@ -269,15 +281,19 @@ svg{display:block}
   border-left:2px solid var(--err);padding:2px 0 2px 10px;margin:10px 0 0;
 }
 
-/* loading indicator */
+/* loading indicator — spinning logo */
 .lg{
-  display:none;width:18px;height:18px;margin-top:12px;
-  border-radius:50%;background:var(--text);opacity:.85;
+  display:none;width:22px;height:22px;margin-top:12px;
+  background:var(--logo) center/contain no-repeat;
 }
 .message.ai:last-child .lg{display:block}
-.message.gen .lg{animation:pulse 1.4s ease-in-out infinite}
+.message.gen .lg{animation:logo-spin 1.6s linear infinite}
 .message.gen .t:empty{display:none}
-@keyframes pulse{0%,100%{transform:scale(.5);opacity:.4}50%{transform:scale(1);opacity:1}}
+@keyframes logo-spin{
+  0%{transform:rotate(0) scale(1)}
+  50%{transform:rotate(180deg) scale(1.08)}
+  100%{transform:rotate(360deg) scale(1)}
+}
 
 /* actions */
 .act{display:flex;gap:0;margin:8px 0 0 -6px;opacity:0;transition:opacity .15s}
@@ -373,11 +389,17 @@ svg{display:block}
 }
 
 .drop-overlay{
-  position:absolute;inset:12px;display:grid;place-items:center;
+  position:absolute;inset:12px;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:14px;
   border:2px dashed var(--border-strong);border-radius:16px;
   background:rgba(33,33,33,.85);color:var(--text);
   font-family:var(--font-serif);font-size:17px;font-weight:500;
   pointer-events:none;z-index:8;
+}
+.drop-overlay::before{
+  content:'';width:44px;height:44px;
+  background:var(--logo) center/contain no-repeat;
+  opacity:.9;
 }
 :root[data-theme=light] .drop-overlay{background:rgba(255,255,255,.9)}
 
@@ -391,6 +413,10 @@ svg{display:block}
 #auth form{
   width:100%;max-width:400px;display:flex;flex-direction:column;
   gap:12px;padding:40px 28px;
+}
+.auth-logo{
+  width:52px;height:52px;margin:0 auto 4px;
+  background:var(--logo) center/contain no-repeat;
 }
 #auth .logo{
   font-family:var(--font-serif);
@@ -601,6 +627,7 @@ svg{display:block}
   .chat{padding:8px 16px}
   .cw{padding:8px 16px 12px}
   .welcome h1{font-size:26px}
+  .welcome-logo{width:44px;height:44px}
   .message.user .uwrap{max-width:85%}
 }
 @media (max-width:480px){
@@ -616,6 +643,7 @@ svg{display:block}
 <!-- Auth -->
 <div id="auth" class="modal" hidden>
   <form id="af">
+    <div class="auth-logo"></div>
     <div class="logo">Welcome to Lazarus</div>
     <p class="s" id="at">Sign in to continue</p>
     <input id="un" placeholder="Username" maxlength="30" autocomplete="username" hidden>
@@ -680,6 +708,7 @@ svg{display:block}
           <rect x="3" y="4" width="18" height="16" rx="2"/><path d="M9 4v16"/>
         </svg>
       </button>
+      <span class="sidebar-brand-logo lz-logo" aria-hidden="true"></span>
       <span class="sidebar-brand">Lazarus</span>
     </div>
 
@@ -755,6 +784,7 @@ svg{display:block}
         </svg>
       </button>
       <div class="model-selector">
+        <span class="model-logo lz-logo" aria-hidden="true"></span>
         <span>Lazarus</span>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="6 9 12 15 18 9"/>
@@ -1446,7 +1476,7 @@ function bubble(role, text, images, index = null) {
   }
 
   message.innerHTML =
-    '<div class="mc"><div class="t"></div><div class="lg" role="img" aria-label="Loading"></div>' +
+    '<div class="mc"><div class="t"></div><div class="lg" role="img" aria-label="Lazarus is thinking"></div>' +
     '<div class="act"' + (text ? '' : ' hidden') + '>' + MESSAGE_ACTIONS + '</div></div>';
 
   const target = message.querySelector('.t');
@@ -1482,7 +1512,10 @@ function renderThread() {
   if (empty) {
     const welcome = document.createElement('div');
     welcome.className = 'welcome';
-    welcome.innerHTML = '<h1></h1><div class="sug"></div>';
+    welcome.innerHTML =
+      '<div class="welcome-logo" aria-hidden="true"></div>' +
+      '<h1></h1>' +
+      '<div class="sug"></div>';
 
     const name = nameOf(user);
     welcome.querySelector('h1').textContent = name
