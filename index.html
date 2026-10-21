@@ -203,6 +203,17 @@ button{cursor:pointer;transition:background .15s,color .15s,border-color .15s,op
 .ctog{padding:8px 14px;border:1px solid var(--border);border-radius:999px;background:var(--panel);font-size:14px}
 .ctog:hover{border-color:var(--accent);color:var(--accent-text)}
 
+/* Study composer (uploads) */
+.study-composer{display:flex;flex-direction:column;gap:10px}
+.study-image-preview{display:flex;flex-wrap:wrap;gap:8px}
+.study-image-item{position:relative;width:72px;height:72px}
+.study-image-item img{width:100%;height:100%;object-fit:cover;border-radius:10px;border:1px solid var(--border)}
+.study-image-item button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;border:0;background:var(--text);color:var(--bg);font-size:11px;padding:0}
+.study-composer-actions{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.study-black-btn{display:inline-flex;align-items:center;gap:6px;background:none;border:1px solid var(--border);border-radius:999px;padding:8px 14px;color:var(--muted);font-size:13px}
+.study-black-btn:hover{border-color:var(--accent);color:var(--text)}
+.study-black-btn svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
 /* Calculator & notepad */
 .calc{position:fixed;right:20px;bottom:20px;z-index:1000;width:min(320px,calc(100vw - 24px));padding:16px;border:1px solid var(--border);border-radius:18px;background:var(--panel);box-shadow:var(--shadow)}
 .ch{display:flex;justify-content:space-between;align-items:center;margin:-4px -4px 12px;padding:4px;cursor:grab;touch-action:none;user-select:none}
@@ -331,83 +342,120 @@ button{cursor:pointer;transition:background .15s,color .15s,border-color .15s,op
       <div id="messages" class="msgs"></div>
     </section>
 
-
-<section id="studyView" hidden>
-  <div class="si">
-    <header>
-      <h1>Study Mode</h1>
-      <p>Your personal learning space. Understand more, practise more, and learn at your pace.</p>
-    </header>
-
-    <div class="tabs" id="tabs">
-      <button type="button" class="tab on" data-m="learn">Learn</button>
-      <button type="button" class="tab" data-m="quiz">Quiz</button>
-      <button type="button" class="tab" data-m="flashcards">Flashcards</button>
-      <button type="button" class="tab" data-m="homework">Homework</button>
-    </div>
-
-    <div class="tools">
-      <button type="button" class="ctog" id="noteToggle">Notepad</button>
-      <button type="button" class="ctog" id="calcToggle">Calculator</button>
-    </div>
-
-    <div class="sp">
-      <h2 id="sTitle"></h2>
-      <p class="d" id="sDesc"></p>
-
-      <label for="sInput">What are you studying?</label>
-
-      <div class="study-composer">
-        <div id="studyImagePreview" class="study-image-preview"></div>
-
-        <textarea
-          id="sInput"
-          class="sf"
-          placeholder="Enter a topic, question, or paste your notes..."
-        ></textarea>
-
-        <div class="study-composer-actions">
-          <input
-            type="file"
-            id="studyImageInput"
-            accept="image/*"
-            multiple
-            hidden
-          >
-
-          <button type="button" class="study-black-btn" id="studyImageButton">
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="3" y="3" width="18" height="18" rx="3"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <path d="m21 15-5-5L5 21"/>
-            </svg>
-            Image
-          </button>
-
-          <button type="button" class="sprim" id="sGo"></button>
-        </div>
+    <!-- ========== Composer (was missing) ========== -->
+    <div id="composerWrap" class="cw">
+      <div id="editBanner" class="edit-banner" hidden>
+        <span>Editing message</span>
+        <button type="button" id="editCancel">Cancel</button>
       </div>
 
-      <p class="sstat" id="sStat" role="status"></p>
-      <div id="sRes" class="study-result"></div>
-      <div id="sCards" class="fcs"></div>
+      <div id="thumbs" hidden></div>
+
+      <div class="composer">
+        <textarea id="messageInput" rows="1" placeholder="Message Lazarus..."></textarea>
+
+        <input type="file" id="file" accept="image/*" multiple hidden>
+
+        <button type="button" class="ib" id="att" aria-label="Attach image">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"/>
+          </svg>
+        </button>
+
+        <button type="button" class="ib" id="mic" aria-label="Dictate">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="2" width="6" height="12" rx="3"/>
+            <path d="M5 10v2a7 7 0 0 0 14 0v-2"/>
+            <line x1="12" y1="19" x2="12" y2="22"/>
+          </svg>
+        </button>
+
+        <button type="button" class="send" id="sendButton" aria-label="Send">↑</button>
+      </div>
+
+      <p class="note">Lazarus can make mistakes. Verify important info.</p>
     </div>
-  </div>
-</section>
 
+    <section id="studyView" hidden>
+      <div class="si">
+        <header>
+          <h1>Study Mode</h1>
+          <p>Your personal learning space. Understand more, practise more, and learn at your pace.</p>
+        </header>
 
+        <div class="tabs" id="tabs">
+          <button type="button" class="tab on" data-m="learn">Learn</button>
+          <button type="button" class="tab" data-m="quiz">Quiz</button>
+          <button type="button" class="tab" data-m="flashcards">Flashcards</button>
+          <button type="button" class="tab" data-m="homework">Homework</button>
+        </div>
 
-<div id="calc" class="calc" hidden>
-  <div class="ch" id="calcHead"><strong>Calculator</strong><button id="calcClose" aria-label="Close calculator">✕</button></div>
-  <div class="cd" id="calcDisp">0</div>
-  <div class="ck" id="calcKeys"></div>
-</div>
+        <div class="tools">
+          <button type="button" class="ctog" id="noteToggle">Notepad</button>
+          <button type="button" class="ctog" id="calcToggle">Calculator</button>
+        </div>
 
-<div id="notepad" class="calc note" hidden>
-  <div class="ch" id="noteHead"><strong>Notepad</strong><button id="noteClose" aria-label="Close notepad">✕</button></div>
-  <textarea id="noteText" placeholder="Jot notes here — they save automatically…" spellcheck="true"></textarea>
-  <div class="note-meta"><span id="noteStat">0 words</span><button class="alt" id="noteClear">Clear</button></div>
-</div>
+        <div class="sp">
+          <h2 id="sTitle"></h2>
+          <p class="d" id="sDesc"></p>
+
+          <label for="sInput">What are you studying?</label>
+
+          <div class="study-composer">
+            <div id="studyImagePreview" class="study-image-preview"></div>
+
+            <textarea
+              id="sInput"
+              class="sf"
+              placeholder="Enter a topic, question, or paste your notes..."
+            ></textarea>
+
+            <div class="study-composer-actions">
+              <input
+                type="file"
+                id="studyImageInput"
+                accept="image/*"
+                multiple
+                hidden
+              >
+
+              <button type="button" class="study-black-btn" id="studyImageButton">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="3" width="18" height="18" rx="3"/>
+                  <circle cx="8.5" cy="8.5" r="1.5"/>
+                  <path d="m21 15-5-5L5 21"/>
+                </svg>
+                Image
+              </button>
+
+              <button type="button" class="sprim" id="sGo"></button>
+            </div>
+          </div>
+
+          <p class="sstat" id="sStat" role="status"></p>
+          <div id="sRes" class="study-result"></div>
+          <div id="sCards" class="fcs"></div>
+        </div>
+      </div>
+    </section>
+
+    <div id="calc" class="calc" hidden>
+      <div class="ch" id="calcHead"><strong>Calculator</strong><button id="calcClose" aria-label="Close calculator">✕</button></div>
+      <div class="cd" id="calcDisp">0</div>
+      <div class="ck" id="calcKeys"></div>
+    </div>
+
+    <div id="notepad" class="calc note" hidden>
+      <div class="ch" id="noteHead"><strong>Notepad</strong><button id="noteClose" aria-label="Close notepad">✕</button></div>
+      <textarea id="noteText" placeholder="Jot notes here — they save automatically…" spellcheck="true"></textarea>
+      <div class="note-meta"><span id="noteStat">0 words</span><button class="alt" id="noteClear">Clear</button></div>
+    </div>
+
+    <div id="dropOverlay" class="drop-overlay" hidden>Drop images to attach</div>
+  </main>
+</div><!-- /.app -->
 
 <script>
 'use strict';
@@ -703,8 +751,6 @@ function md(src) {
 
 /* ============================================================
    Guest session (anonymous Supabase user → real JWT)
-   Requires "Allow anonymous sign-ins" in Supabase Auth settings.
-   Falls back to the public key if anonymous sign-in is unavailable.
    ============================================================ */
 async function getGuestToken() {
   const cached = LS.get('lz_guest_session');
@@ -746,7 +792,6 @@ async function stream(messages, onDelta, signal) {
   const isGuest = !!(user && user.guest);
   let session = isGuest ? null : LS.get('lz_session');
 
-  // Guests use an anonymous Supabase session (falls back to the public key).
   const guestToken = isGuest ? ((await getGuestToken()) || CFG.SB_ANON) : null;
   if (!session?.access_token && !guestToken) {
     throw new Error('Please sign in to continue.');
@@ -1615,8 +1660,6 @@ function parseJsonArray(text) {
   return JSON.parse(text.slice(start, end + 1));
 }
 
-
-
 async function studyGo() {
   if (user.guest) {
     openAuth();
@@ -1704,7 +1747,6 @@ async function studyGo() {
     }
   }
 }
-
 
 function renderCards(cards) {
   const box = $('sCards');
@@ -1921,7 +1963,6 @@ function wireDragDrop() {
    Views, theme, settings, auth flows
    ============================================================ */
 
-
 function showView(view) {
   const isStudy = view === 'study';
 
@@ -1952,7 +1993,6 @@ function showView(view) {
   const sidebar = document.getElementById('sidebar');
   if (sidebar) sidebar.classList.remove('open');
 }
-
 
 function applyTheme() {
   const theme = prefs.theme === 'system'
@@ -2037,13 +2077,7 @@ async function enter(account) {
 /* ============================================================
    Event wiring
    ============================================================ */
-
-/* ============================================================
-   Event wiring
-   ============================================================ */
-
 function wire() {
-  // Helpers: safely wire controls that exist in the current HTML.
   const byId = id => $(id);
 
   const click = (id, handler) => {
@@ -2141,18 +2175,7 @@ function wire() {
     renderList();
   });
 
- 
-  click('studyBtn', () => {
-    const chatView = byId('chatView');
-    const studyView = byId('studyView');
-    const composerWrap = byId('composerWrap');
-
-    if (chatView) chatView.hidden = true;
-    if (studyView) studyView.hidden = false;
-    if (composerWrap) composerWrap.hidden = true;
-
-    byId('sidebar')?.classList.remove('open');
-  });
+  click('studyBtn', () => showView('study'));
 
   click('privBtn', () => {
     if (ctrl) return;
@@ -2216,9 +2239,7 @@ function wire() {
 
   /* --- Drag and drop --- */
 
-  if (
-    typeof wireDragDrop === 'function'
-  ) {
+  if (typeof wireDragDrop === 'function') {
     wireDragDrop();
   }
 
@@ -2420,29 +2441,13 @@ function wire() {
     updateNoteStat();
   });
 
-
   if (byId('notepad') && byId('noteHead')) {
     makeDraggable(byId('notepad'), byId('noteHead'));
   }
+
+  /* --- Initialize study mode UI to "learn" defaults --- */
+  if (byId('sTitle')) setStudyMode('learn');
 }
-
-// Attach Study Mode navigation after the page loads.
-document.addEventListener('DOMContentLoaded', () => {
-  const studyButton = document.getElementById('studyBtn');
-  const chatView = document.getElementById('chatView');
-  const studyView = document.getElementById('studyView');
-
-  if (!studyButton || !chatView || !studyView) {
-    console.error('Study Mode: required HTML elements are missing.');
-    return;
-  }
-
-  studyButton.addEventListener('click', () => {
-    chatView.hidden = true;
-    studyView.hidden = false;
-  });
-});
-
 
 /* ============================================================
    Init
@@ -2471,3 +2476,6 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('Lazarus initialization failed:', error);
   }
 })();
+</script>
+</body>
+</html>
