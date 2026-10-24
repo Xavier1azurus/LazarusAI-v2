@@ -694,7 +694,15 @@ svg{display:block}
     <label for="about">Custom instructions</label>
     <textarea id="about" maxlength="500" rows="3" placeholder="e.g. I'm learning Spanish. Explain things with examples."></textarea>
 
-    <button class="go" id="ssave">Save</button>
+    <!-- Change Password Section -->
+    <div id="passwordSection" style="margin-top: 12px; border-top: 1px solid var(--border); padding-top: 12px;">
+      <label>Change Password</label>
+      <input id="newPw" type="password" placeholder="New password (min 6 chars)" minlength="6" autocomplete="new-password" style="margin-top: 6px; margin-bottom: 8px;">
+      <button class="go" id="pwSave" type="button" style="background: var(--hover-strong); color: var(--text);">Update Password</button>
+      <div id="pwErr" style="color: var(--err); font-size: 13px; margin-top: 6px; min-height: 18px;"></div>
+    </div>
+
+    <button class="go" id="ssave" style="margin-top: 12px;">Save</button>
   </div>
 </div>
 
@@ -2399,6 +2407,15 @@ function syncSettings() {
   $('dn').value = prefs.name;
   $('about').value = prefs.about;
 
+  const passwordSection = $('passwordSection');
+  if (passwordSection) {
+    passwordSection.hidden = !!(user && user.guest);
+  }
+  const pwErr = $('pwErr');
+  if (pwErr) pwErr.textContent = '';
+  const newPw = $('newPw');
+  if (newPw) newPw.value = '';
+
   document.querySelectorAll('#seg button').forEach(button =>
     button.classList.toggle('on', button.dataset.t === prefs.theme));
   document.querySelectorAll('#pers button').forEach(button =>
@@ -2620,6 +2637,51 @@ function wire() {
     if (!button) return;
     prefs.length = button.dataset.l;
     syncSettings();
+  });
+
+  click('pwSave', async () => {
+    const pwInput = $('newPw');
+    const pwErr = $('pwErr');
+    const newPassword = pwInput ? pwInput.value : '';
+
+    if (pwErr) pwErr.textContent = '';
+
+    if (newPassword.length < 6) {
+      if (pwErr) {
+        pwErr.style.color = 'var(--err)';
+        pwErr.textContent = 'Password must be at least 6 characters.';
+      }
+      return;
+    }
+
+    try {
+      const res = await sb('/auth/v1/user', {
+        method: 'PUT',
+        body: JSON.stringify({ password: newPassword })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.msg || data.error_description || data.message || 'Failed to update password');
+      }
+
+      if (pwInput) pwInput.value = '';
+      if (pwErr) {
+        pwErr.style.color = 'var(--ok)';
+        pwErr.textContent = 'Password updated successfully!';
+        setTimeout(() => {
+          if (pwErr) {
+            pwErr.textContent = '';
+            pwErr.style.color = 'var(--err)';
+          }
+        }, 3000);
+      }
+    } catch (err) {
+      if (pwErr) {
+        pwErr.style.color = 'var(--err)';
+        pwErr.textContent = err.message;
+      }
+    }
   });
 
   click('ssave', () => {
